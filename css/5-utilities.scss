@@ -1,0 +1,13 @@
+// Sass placeholders.
+
+%Clearfix-Overflow {
+  overflow: hidden;
+}
+
+%Clearfix-After:after {
+  content: '';
+  display: block;
+  visibility: hidden;
+  clear: both;
+  height: 0;
+}

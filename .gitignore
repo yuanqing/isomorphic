@@ -1,0 +1,6 @@
+.DS_Store
+coverage/
+dist/
+dump.rdb
+node_modules/
+*.log

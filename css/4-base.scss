@@ -1,0 +1,12 @@
+// Rules for styling "raw" HTML tags; no classes allowed.
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @extend %FontFamily-Base;
+  cursor: default;
+  color: $Color-Black;
+  background: $Color-White;
+}
