@@ -21,7 +21,6 @@ var sourcemaps = require('gulp-sourcemaps');
 var runSequence = require('run-sequence');
 var autoprefixer = require('gulp-autoprefixer');
 var istanbulCombine = require('istanbul-combine');
-
 var config = require('./config');
 
 // If this constant is `true`, minify our compiled JS and CSS.
@@ -50,7 +49,7 @@ var JS_DIST_VENDOR_FILENAME = 'vendor.js';
 var JS_DIST_APP_FILENAME = 'app.js';
 
 // List of modules to bundle separately from our app's JS.
-var JS_EXTERNAL_MODULES = ['firebase', 'react'];
+var JS_VENDOR_MODULES = ['firebase', 'react'];
 
 // Directory to write coverage reports.
 var COVERAGE_DIR = 'coverage';
@@ -76,8 +75,7 @@ var opts = nopt({
   o: ['--open', 'google chrome']
 });
 
-// Helper function for launching Chrome if the `--open` (or `-o`) flag
-// is specified.
+// Helper for launching Chrome if the `--open` (or `-o`) flag is specified.
 var openUrl = function(url) {
   gutil.log('Opening', gutil.colors.yellow(url));
   if (opts.open) {
@@ -89,11 +87,7 @@ var openUrl = function(url) {
   }
 };
 
-//
 // JS
-//
-
-// Lint, test, and build our JS.
 gulp.task('js', ['js:lint', 'js:test', 'js:build']);
 
 // Lint our JS.
@@ -107,13 +101,10 @@ gulp.task('js:lint', function() {
 
 // Run our server-side and client-side tests.
 gulp.task('js:test', function(cb) {
-  runSequence('js:test:server', 'js:test:client', 'js:coverage', function() {
-    openUrl(COVERAGE_HTML_FILE);
-    cb();
-  });
+  runSequence('js:test:server', 'js:test:client', 'js:coverage', cb);
 });
 
-// Run our server-side tests, and write coverage reports in `coverage/server`.
+// Run our server-side tests, and write coverage reports to `coverage/server`.
 gulp.task('js:test:server', shell.task([
   'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape ' + JS_TEST_FILES,
 ]));
@@ -134,7 +125,7 @@ gulp.task('js:test:client', function(cb) {
   }, cb).start();
 });
 
-// Combine code coverage reports
+// Combine the server-side and client-side coverage reports.
 gulp.task('js:coverage', function(cb) {
   istanbulCombine({
     dir: COVERAGE_DIR,
@@ -144,16 +135,19 @@ gulp.task('js:coverage', function(cb) {
       lcov: {},
       text: {}
     }
-  }, cb);
+  }, function() {
+    openUrl(COVERAGE_HTML_FILE);
+    cb();
+  });
 });
 
-// Build vendor JS and our app JS.
+// Build the vendor JS and our app JS.
 gulp.task('js:build', ['js:build:vendor', 'js:build:app']);
 
 // Build vendor JS.
 gulp.task('js:build:vendor', function() {
   var b = browserify();
-  return b.require(JS_EXTERNAL_MODULES)
+  return b.require(JS_VENDOR_MODULES)
     .bundle()
     .pipe(source(JS_DIST_VENDOR_FILENAME))
     .pipe(buffer())
@@ -167,7 +161,7 @@ gulp.task('js:build:app', function() {
     entries: JS_CLIENT_FILE,
     transform: [reactify, envify]
   });
-  return b.external(JS_EXTERNAL_MODULES)
+  return b.external(JS_VENDOR_MODULES)
     .bundle()
     .pipe(source(JS_DIST_APP_FILENAME))
     .pipe(buffer())
@@ -179,7 +173,7 @@ gulp.task('js:build:app', function() {
     .pipe(gulp.dest(JS_DIST_DIR));
 });
 
-// Re-compile our JS on every file change.
+// Rebuild our JS and restart the app on every file change.
 gulp.task('js:watch', function() {
   nodemon({
     watch: JS_ALL_DIRS,
@@ -188,11 +182,7 @@ gulp.task('js:watch', function() {
   });
 });
 
-//
 // CSS
-//
-
-// Build our CSS.
 gulp.task('css', ['css:build']);
 
 // Build our CSS.
@@ -214,15 +204,12 @@ gulp.task('css:build', function() {
     .pipe(gulp.dest(CSS_DIST_DIR));
 });
 
-// Re-compile our CSS on every file change.
+// Rebuild our CSS on every file change.
 gulp.task('css:watch', ['css:build'], function() {
   gulp.watch(CSS_ALL_FILES, ['css:build']);
 });
 
-//
 // CLEAN
-//
-
 gulp.task('clean', ['clean:dist', 'clean:coverage']);
 
 // Delete the `dist` directory.
@@ -235,31 +222,16 @@ gulp.task('clean:coverage', function(cb) {
   del(COVERAGE_DIR, cb);
 });
 
-//
 // LINT
-//
-
-// Lint our JS.
 gulp.task('lint', ['js:lint']);
 
-//
 // TEST
-//
-
-// Test our JS.
 gulp.task('test', ['js:test']);
 
-//
 // BUILD
-//
-
-// Compile our JS and CSS.
 gulp.task('build', ['js:build', 'css:build']);
 
-//
 // SERVE
-//
-
 // Run the app, without watching for changes. Pass in an `-o` flag to open
 // the app in Chrome.
 gulp.task('serve', function(cb) {
@@ -270,11 +242,8 @@ gulp.task('serve', function(cb) {
   });
 });
 
-//
 // WATCH
-//
-
-// Run the app, re-compiling our JS or CSS on every file change. Pass in an
+// Run the app, rebuilding our JS or CSS on every file change. Pass in an
 // `-o` flag to open the app in Chrome.
 gulp.task('watch', function(cb) {
   runSequence('build', ['js:watch', 'css:watch'], function() {
@@ -283,8 +252,5 @@ gulp.task('watch', function(cb) {
   });
 });
 
-//
 // DEFAULT
-//
-
 gulp.task('default', ['watch']);
