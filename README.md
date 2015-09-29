@@ -1,9 +1,13 @@
 ```sh
-$ npm i
+# Install dependencies
+$ npm install
 
-# Run and open the app in Chrome
-$ gulp -o
+# Install Gulp
+$ npm install --global gulp
+
+# Build and serve the app, and open it in Chrome
+$ gulp --open
 
 # Run tests and open coverage reports in Chrome
-$ gulp test -o
+$ gulp test --open
 ```
