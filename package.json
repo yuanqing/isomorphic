@@ -67,7 +67,7 @@
   },
   "scripts": {
     "subl": "subl css js lib",
-    "start": "gulp -o",
+    "start": "gulp",
     "test": "gulp test"
   },
   "private": true
