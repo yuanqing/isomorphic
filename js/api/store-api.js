@@ -7,6 +7,6 @@ module.exports = {
   setQuantity: function(productSlug, quantity) {
     var product = {};
     product[productSlug] = quantity;
-    return firebase.update('products', product);
+    return firebase.set('products', product);
   }
 };
