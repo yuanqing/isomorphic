@@ -11,7 +11,7 @@ delete window.__STATE__;
 var scriptElem = document.querySelector('.__STATE__');
 scriptElem.parentNode.removeChild(scriptElem);
 
-firebase.listen(function(err, data) {
+firebase.listen(function(data) {
   console.log('Synced from Firebase:', data);
   store.dispatch(StoreActionCreator.receiveProducts(data.products));
 });
