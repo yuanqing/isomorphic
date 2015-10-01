@@ -21,13 +21,12 @@ module.exports = function(config) {
       'tape'
     ],
     preprocessors: {
-      'test/*.js': ['browserify'],
-      'test/client/*.jsx': ['browserify'],
+      'test/**/*.js': ['browserify'],
+      // 'test/client/*.jsx': ['browserify'],
       // 'test/client/fixture.html': ['html2js'],
     },
     files: [
-      'test/*.js',
-      'test/client/*.js'
+      'test/**/*.js'
       // {
       //   pattern: 'test/client/fixture.html',
       //   included: false,

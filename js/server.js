@@ -29,10 +29,11 @@ var app = express();
 app.use(compression());
 
 // Serve favicon.
-app.use(serveFavicon(ROOT_DIR + '/public/favicon.ico'));
+app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
 
-// Serve the `/dist` directory.
+// Serve the `/dist` and `/assets` directories.
 app.use('/dist', express.static(ROOT_DIR + '/dist'));
+app.use('/assets', express.static(ROOT_DIR + '/assets'));
 
 // Set up sessions.
 var RedisStore = connectRedis(expressSession);
@@ -50,8 +51,9 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
-// Serialise the `state`, and interpolate it into our template.
+// Intercept all `get` requests.
 app.get('*', function(req, res) {
+  // Initialise a new Store for every request.
   var store = new Store(reducers);
   var routeActionCreator = new RouteActionCreator(routes, store);
   store.dispatch(routeActionCreator.route(req.url)).then(function() {
@@ -65,6 +67,7 @@ app.get('*', function(req, res) {
       store: store,
       state: state
     });
+    // Serialise the `state`, and interpolate it into our template.
     res.end(tmpl({
       app: React.renderToString(reactElem),
       state: JSON.stringify(state)

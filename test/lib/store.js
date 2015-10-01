@@ -1,7 +1,7 @@
 var test = require('tape');
 
-var Store = require('../lib/store');
-var promise = require('../lib/promise');
+var Store = require('../../lib/store');
+var promise = require('../../lib/promise');
 
 test('get state', function(t) {
   t.plan(1);

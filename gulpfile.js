@@ -43,7 +43,7 @@ var JS_ALL_FILES = [
   'lib/**/*.js',
   'js/**/*.js'
 ];
-var JS_TEST_FILES = 'test/*.js';
+var JS_TEST_FILES = 'test/**/*.js';
 var JS_DIST_DIR = DIST_DIR + '/js';
 var JS_DIST_VENDOR_FILENAME = 'vendor.js';
 var JS_DIST_APP_FILENAME = 'app.js';
@@ -77,8 +77,8 @@ var opts = nopt({
 
 // Helper for launching Chrome if the `--open` (or `-o`) flag is specified.
 var openUrl = function(url) {
-  gutil.log('Opening', gutil.colors.yellow(url));
   if (opts.open) {
+    gutil.log('Opening', gutil.colors.yellow(url));
     setTimeout(function() {
       opn(url, {
         app: opts.open
@@ -99,17 +99,23 @@ gulp.task('js:lint', function() {
     .pipe(eslint.failOnError());
 });
 
-// Run our server-side and client-side tests.
+// Run all our JavaScript tests (on both the server-side and client-side). Pass
+// in an `-o` flag to open test coverage reports in Chrome.
 gulp.task('js:test', function(cb) {
-  runSequence('js:test:server', 'js:test:client', 'js:coverage', cb);
+  runSequence('js:test:server', 'js:test:client', 'js:coverage', function() {
+    openUrl(COVERAGE_HTML_FILE);
+    cb();
+  });
 });
 
-// Run our server-side tests, and write coverage reports to `coverage/server`.
+// Run our tests on the server-side, and write coverage reports
+// to the `COVERAGE_SERVER_DIR`.
 gulp.task('js:test:server', shell.task([
   'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape ' + JS_TEST_FILES,
 ]));
 
-// Run our client-side tests, and write coverage reports to `coverage/client`.
+// Run our tests on the client-side, and write coverage reports
+// to `COVERAGE_CLIENT_DIR`.
 gulp.task('js:test:client', function(cb) {
   new karma.Server({
     configFile: KARMA_CONF_FILE,
@@ -135,10 +141,7 @@ gulp.task('js:coverage', function(cb) {
       lcov: {},
       text: {}
     }
-  }, function() {
-    openUrl(COVERAGE_HTML_FILE);
-    cb();
-  });
+  }, cb);
 });
 
 // Build the vendor JS and our app JS.
