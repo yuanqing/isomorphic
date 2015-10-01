@@ -29,10 +29,11 @@ var app = express();
 app.use(compression());
 
 // Serve favicon.
-app.use(serveFavicon(ROOT_DIR + '/public/favicon.ico'));
+app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
 
-// Serve the `/dist` directory.
+// Serve the `/dist` and `/assets` directories.
 app.use('/dist', express.static(ROOT_DIR + '/dist'));
+app.use('/assets', express.static(ROOT_DIR + '/assets'));
 
 // Set up sessions.
 var RedisStore = connectRedis(expressSession);
