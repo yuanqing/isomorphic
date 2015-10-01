@@ -1,6 +1,6 @@
 var test = require('tape');
 
-var assign = require('../lib/assign');
+var assign = require('../../lib/assign');
 
 test('does not mutate the first argument', function(t) {
   t.plan(3);

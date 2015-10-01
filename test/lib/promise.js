@@ -1,5 +1,5 @@
 var test = require('tape');
-var promise = require('../lib/promise');
+var promise = require('../../lib/promise');
 
 test('`promise.all` accepts an array', function(t) {
   t.plan(1);

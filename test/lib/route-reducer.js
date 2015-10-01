@@ -1,8 +1,8 @@
 var test = require('tape');
 
-var assign = require('../lib/assign');
-var routeReducer = require('../lib/route-reducer');
-var RouteActionCreator = require('../lib/route-action-creator');
+var assign = require('../../lib/assign');
+var routeReducer = require('../../lib/route-reducer');
+var RouteActionCreator = require('../../lib/route-action-creator');
 
 var routeActionCreator = new RouteActionCreator({}, null);
 

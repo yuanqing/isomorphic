@@ -1,8 +1,8 @@
 var test = require('tape');
 
-var Store = require('../lib/store');
-var RouteActionCreator = require('../lib/route-action-creator');
-var RouteActionTypes = require('../lib/route-action-types');
+var Store = require('../../lib/store');
+var RouteActionCreator = require('../../lib/route-action-creator');
+var RouteActionTypes = require('../../lib/route-action-types');
 var IS_SERVER = typeof window === 'undefined';
 
 var reducer = function(action, state) {
