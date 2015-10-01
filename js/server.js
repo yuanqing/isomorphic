@@ -51,8 +51,9 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
-// Serialise the `state`, and interpolate it into our template.
+// Intercept all `get` requests.
 app.get('*', function(req, res) {
+  // Initialise a new Store for every request.
   var store = new Store(reducers);
   var routeActionCreator = new RouteActionCreator(routes, store);
   store.dispatch(routeActionCreator.route(req.url)).then(function() {
@@ -66,6 +67,7 @@ app.get('*', function(req, res) {
       store: store,
       state: state
     });
+    // Serialise the `state`, and interpolate it into our template.
     res.end(tmpl({
       app: React.renderToString(reactElem),
       state: JSON.stringify(state)
