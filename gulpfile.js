@@ -77,8 +77,8 @@ var opts = nopt({
 
 // Helper for launching Chrome if the `--open` (or `-o`) flag is specified.
 var openUrl = function(url) {
-  gutil.log('Opening', gutil.colors.yellow(url));
   if (opts.open) {
+    gutil.log('Opening', gutil.colors.yellow(url));
     setTimeout(function() {
       opn(url, {
         app: opts.open
