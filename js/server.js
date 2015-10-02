@@ -51,12 +51,13 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
+var routeActionCreator = new RouteActionCreator(routes);
 // Intercept all `get` requests.
 app.get('*', function(req, res) {
   // Initialise a new Store for every request.
   var store = new Store(reducers);
-  var routeActionCreator = new RouteActionCreator(routes, store);
-  store.dispatch(routeActionCreator.route(req.url)).then(function() {
+  // Pass in the empty `store`.
+  store.dispatch(routeActionCreator.route(req.url, { store: store })).then(function() {
     var state = store.getState();
     var redirectUrl = state.route.redirectUrl;
     if (redirectUrl) {
