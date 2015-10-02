@@ -15,7 +15,7 @@ var RouteActionCreator = require('../lib/route-action-creator');
 
 var routes = require('./routes');
 var reducers = require('./reducers');
-var MainComponent = require('./components/main-component');
+var Controller = require('./Controller');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
@@ -64,13 +64,16 @@ app.get('*', function(req, res) {
       res.status(301);
       return res.redirect(redirectUrl);
     }
-    var reactElem = React.createElement(MainComponent, {
+    if (state.route.error) {
+      res.status(404);
+    }
+    var reactElement = React.createElement(Controller, {
       store: store,
       state: state
     });
     // Serialise the `state`, and interpolate it into our template.
     res.end(tmpl({
-      app: React.renderToString(reactElem),
+      app: React.renderToString(reactElement),
       state: JSON.stringify(state)
     }));
   });

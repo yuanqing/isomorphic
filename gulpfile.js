@@ -13,6 +13,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
+var bulkify = require('bulkify');
 var nodemon = require('gulp-nodemon');
 var reactify = require('reactify');
 var minifyCss = require('gulp-minify-css');
@@ -188,7 +189,7 @@ gulp.task('build:js:vendor', function() {
 gulp.task('build:js:app', function() {
   var b = browserify({
     entries: JS_CLIENT_FILE,
-    transform: [reactify, envify]
+    transform: [reactify, bulkify, envify]
   });
   return b.external(JS_VENDOR_MODULES)
     .bundle()

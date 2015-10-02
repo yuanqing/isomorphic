@@ -2,14 +2,14 @@ var StoreActionCreator = require('./action-creators/store-action-creator');
 
 module.exports = {
 
-  '/': function() {
-    this.render('HomeComponent');
+  '': function() {
+    this.render('home');
   },
 
-  '/stores/:store_slug': function(params, store) {
+  'stores/:store_slug': function(params, store) {
     var self = this;
     var render = function() {
-      self.render('StoreComponent');
+      self.render('store');
     };
     var storeSlug = params.store_slug;
     var stores = store.getState().stores; // stores as in shops
@@ -19,16 +19,16 @@ module.exports = {
     store.dispatch(StoreActionCreator.fetchProducts(storeSlug), render);
   },
 
-  '/help': function() {
-    this.route('/faq');
+  'help': function() {
+    this.route('faq');
   },
 
-  '/faq': function() {
-    this.render('FaqComponent');
+  'faq': function() {
+    this.render('faq');
   },
 
-  '/404': function() {
-    this.error('NotFoundComponent');
+  '404': function() {
+    this.error('404');
   }
 
 };
