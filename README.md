@@ -1,6 +1,6 @@
 ## Ideas
 
-1. [**Redux**](http://rackt.github.io/redux/docs/introduction/ThreePrinciples.html) &mdash; App state is a single JSON object, which can be serialised.
+1. [**Redux**](http://rackt.github.io/redux/docs/introduction/ThreePrinciples.html) &mdash; App state is a single JSON object. This means that app state serialised.
 2. [**Flux**](https://facebook.github.io/flux/docs/overview.html) &mdash; Data *always* flows in a single direction through the app.
 3. [**React**](https://facebook.github.io/react/docs/why-react.html#declarative) &mdash; The view layer is a black box; whenever there is a change in the app state, our mental model can be that we will *re-render the entire app*. (But in practice, only the minimal set of DOM mutations are performed.)
 
@@ -42,7 +42,7 @@ Lint all the JavaScript in `lib` and `js`.
 
 #### `$ gulp test`
 
-Run all the JavaScript tests (on both server-side and client-side). Pass in an `-o` flag to open the test coverage reports in Chrome.
+Run all the JavaScript tests on both the server-side and client-side. Pass in an `-o` flag to open the test coverage reports in Chrome.
 
 ## Directory structure
 
@@ -52,10 +52,10 @@ Directory | Description
 `config` | Configuration files.
 `css` | Our app Sass files.
 `js` | Our app JavaScript files.
-`lib` | The code for the core Flux/Redux-inspired framework, consumed by code in the `js` directory. (Ideally, code in this directory can eventually be abstracted into a standalone npm module.)
+`lib` | The code for the core framework, consumed by code in the `js` directory. (Ideally, code in this directory can eventually be abstracted into a standalone npm module.)
 `test` | Tests for the code in `js` and `lib`.
 
-Some directories are generated locally (and not to be checked into this repository):
+Some directories are generated when doing development locally (and are not checked into the repository):
 
 Directory | Description
 :--|:--
