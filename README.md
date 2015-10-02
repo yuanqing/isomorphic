@@ -55,7 +55,7 @@ Directory | Description
 `lib` | The code for the core framework, consumed by code in the `js` directory. (Ideally, code in this directory can eventually be abstracted into a standalone npm module.)
 `test` | Tests for the code in `js` and `lib`.
 
-Some directories are generated when doing development locally (and are not checked into the repository):
+Some directories only exist locally (and should not be checked into source control):
 
 Directory | Description
 :--|:--
