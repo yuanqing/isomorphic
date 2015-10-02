@@ -79,7 +79,7 @@ var args = nopt({
 
 // Helper for launching Chrome if the `--open` (or `-o`) flag is specified.
 var openUrl = function(url, callback) {
-  gutil.log('Opening', gutil.colors.yellow(url));
+  gutil.log('Opening', gutil.colors.green(url));
   setTimeout(function() {
     opn(url, {
       app: args.open
@@ -87,6 +87,19 @@ var openUrl = function(url, callback) {
     callback();
   }, 1000);
 };
+
+// Delete the `dist` and `coverage` directories.
+gulp.task('clean', ['clean:dist', 'clean:coverage']);
+
+// Delete the `dist` directory.
+gulp.task('clean:dist', function(callback) {
+  del(DIST_DIR, callback);
+});
+
+// Delete the `coverage` directory.
+gulp.task('clean:coverage', function(callback) {
+  del(COVERAGE_DIR, callback);
+});
 
 // Lint our JS.
 gulp.task('lint', function() {
@@ -138,6 +151,25 @@ gulp.task('test:combine-coverage', function(callback) {
   }, callback);
 });
 
+// Generate and open the combined coverage report (server-side and
+// client-side).
+gulp.task('coverage', ['test'], function(callback) {
+  openUrl(COVERAGE_COMBINED_HTML_FILE, callback);
+});
+
+// Generate and open the coverage report for the server-side tests.
+gulp.task('coverage:server', ['test:server'], function(callback) {
+  openUrl(COVERAGE_SERVER_HTML_FILE, callback);
+});
+
+// Generate and open the coverage report for the client-side tests.
+gulp.task('coverage:client', ['test:client'], function(callback) {
+  openUrl(COVERAGE_CLIENT_HTML_FILE, callback);
+});
+
+// Build our JS and CSS.
+gulp.task('build', ['build:js', 'build:css']);
+
 // Build the vendor JS and our app JS.
 gulp.task('build:js', ['build:js:vendor', 'build:js:app']);
 
@@ -170,31 +202,6 @@ gulp.task('build:js:app', function() {
     .pipe(gulp.dest(JS_DIST_DIR));
 });
 
-// Rebuild our JS and restart the app on every file change.
-gulp.task('watch:js', function() {
-  nodemon({
-    watch: JS_ALL_DIRS,
-    script: JS_SERVER_FILE,
-    tasks: ['js:build:app']
-  });
-});
-
-// Generate and open the combined coverage report (server-side and
-// client-side).
-gulp.task('coverage', ['test'], function(callback) {
-  openUrl(COVERAGE_COMBINED_HTML_FILE, callback);
-});
-
-// Generate and open the coverage report for the server-side tests.
-gulp.task('coverage:server', ['test:server'], function(callback) {
-  openUrl(COVERAGE_SERVER_HTML_FILE, callback);
-});
-
-// Generate and open the coverage report for the client-side tests.
-gulp.task('coverage:client', ['test:client'], function(callback) {
-  openUrl(COVERAGE_CLIENT_HTML_FILE, callback);
-});
-
 // Build our CSS.
 gulp.task('build:css', function() {
   return gulp.src(CSS_MAIN_FILE)
@@ -214,42 +221,35 @@ gulp.task('build:css', function() {
     .pipe(gulp.dest(CSS_DIST_DIR));
 });
 
-// Rebuild our CSS on every file change.
-gulp.task('watch:css', ['css:build'], function() {
-  gulp.watch(CSS_ALL_FILES, ['css:build']);
-});
-
-// Delete the `dist` and `coverage` directories.
-gulp.task('clean', ['clean:dist', 'clean:coverage']);
-
-// Delete the `dist` directory.
-gulp.task('clean:dist', function(callback) {
-  del(DIST_DIR, callback);
-});
-
-// Delete the `coverage` directory.
-gulp.task('clean:coverage', function(callback) {
-  del(COVERAGE_DIR, callback);
-});
-
-// Build our JS and CSS.
-gulp.task('build', ['build:js', 'build:css']);
-
-// Run the app, without watching for changes. Pass in an `-o` flag to open
-// the app in Chrome.
-gulp.task('serve', function(callback) {
-  runSequence('build', function() {
-    require(JS_SERVER_FILE);
-    if (args.open) {
-      openUrl(APP_URL, callback);
-    }
+// Rebuild our JS and restart the app on every file change.
+gulp.task('watch:js', function() {
+  nodemon({
+    watch: JS_ALL_DIRS,
+    script: JS_SERVER_FILE,
+    tasks: ['build:js:app']
   });
+});
+
+// Rebuild our CSS on every file change.
+gulp.task('watch:css', ['build:css'], function() {
+  gulp.watch(CSS_ALL_FILES, ['build:css']);
 });
 
 // Run the app, rebuilding our JS or CSS on every file change. Pass in an `-o`
 // flag to open the app in Chrome.
 gulp.task('default', function(callback) {
   runSequence('build', ['watch:js', 'watch:css'], function() {
+    if (args.open) {
+      openUrl(APP_URL, callback);
+    }
+  });
+});
+
+// Run the app, without watching for changes. Pass in an `-o` flag to open
+// the app in Chrome.
+gulp.task('serve', function(callback) {
+  runSequence('build', function() {
+    require(JS_SERVER_FILE);
     if (args.open) {
       openUrl(APP_URL, callback);
     }
