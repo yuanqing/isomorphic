@@ -12,7 +12,7 @@ module.exports = React.createClass({
     return this.props.state || {};
   },
   render: function() {
-    var Container = containers[this.state.route.componentName];
+    var Container = containers[this.state.route.containerName];
     return (
       <div>
         <Header />

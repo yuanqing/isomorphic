@@ -2,7 +2,6 @@ require('babel/register');
 var fs = require('fs');
 var path = require('path');
 var React = require('react');
-var config = require('config');
 var express = require('express');
 var compression = require('compression');
 var connectRedis = require('connect-redis');
@@ -13,6 +12,7 @@ var expressSession = require('express-session');
 var Store = require('../lib/store');
 var RouteActionCreator = require('../lib/route-action-creator');
 
+var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
 var Controller = require('./Controller');
@@ -24,6 +24,9 @@ var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/index.html', 'utf8'));
 
 // Initialise.
 var app = express();
+
+// Disable a header.
+app.disable('x-powered-by');
 
 // Gzip.
 app.use(compression());
@@ -44,8 +47,8 @@ app.use(expressSession({
     httpOnly: false
   },
   store: new RedisStore({
-    host: 'localhost',
-    port: 6379
+    host: config.redisHostname,
+    port: config.redisPort
   }),
   resave: false,
   saveUninitialized: true
@@ -54,18 +57,20 @@ app.use(expressSession({
 var routeActionCreator = new RouteActionCreator(routes);
 // Intercept all `get` requests.
 app.get('*', function(req, res) {
-  // Initialise a new Store for every request.
+  // Initialise a new Store for every new request.
   var store = new Store(reducers);
-  // Pass in the empty `store`.
+  // Pass in the empty `store` to the `route` method.
   store.dispatch(routeActionCreator.route(req.url, { store: store })).then(function() {
     var state = store.getState();
-    var redirectUrl = state.route.redirectUrl;
-    if (redirectUrl) {
-      res.status(301);
-      return res.redirect(redirectUrl);
-    }
+    // Check if there was an error or if we need to redirect.
     if (state.route.error) {
       res.status(404);
+    } else {
+      var redirectUrl = state.route.redirectUrl;
+      if (redirectUrl) {
+        res.status(301);
+        return res.redirect(redirectUrl);
+      }
     }
     var reactElement = React.createElement(Controller, {
       store: store,
@@ -80,4 +85,4 @@ app.get('*', function(req, res) {
 });
 
 // Run the app.
-app.listen(config.port);
+app.listen(config.expressPort);
