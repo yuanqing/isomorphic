@@ -9,7 +9,6 @@
     "bulk-require": "^0.2.1",
     "bulkify": "^1.1.1",
     "compression": "~1.5.2",
-    "config": "~1.16.0",
     "connect-redis": "~2.4.1",
     "express": "~4.13.3",
     "express-session": "~1.11.3",
