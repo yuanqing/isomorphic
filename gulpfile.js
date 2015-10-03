@@ -68,25 +68,23 @@ var CSS_ALL_FILES = 'css/**/*.scss';
 var CSS_DIST_DIR = DIST_DIR + '/css';
 
 // The URL we're serving our app at.
-var APP_URL = 'http://localhost:' + config.port;
+var APP_URL = 'http://localhost:' + config.expressPort;
 
 // Parse command-line arguments.
 var args = nopt({
   open: String
 }, {
-  // `gulp -o` becomes `gulp --open 'google chrome'`
+  // `gulp -o` becomes `gulp --open 'google chrome'`.
   o: ['--open', 'google chrome']
 });
 
-// Helper for launching Chrome if the `--open` (or `-o`) flag is specified.
+// Helper for opening the given `url` in Chrome.
 var openUrl = function(url, callback) {
-  gutil.log('Opening', gutil.colors.green(url));
-  setTimeout(function() {
-    opn(url, {
-      app: args.open
-    });
-    callback();
-  }, 1000);
+  gutil.log(gutil.colors.green('Opening', url));
+  opn(url, {
+    app: args.open,
+    wait: false
+  }, callback);
 };
 
 // Delete the `dist` and `coverage` directories.
