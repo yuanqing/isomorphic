@@ -13,8 +13,8 @@ var routes = {
   'bar': function() {
     this.route('foo');
   },
-  'baz': function() {
-    this.error('baz');
+  '404': function() {
+    this.error('404');
   }
 };
 
@@ -126,20 +126,55 @@ test('route where `error` is called', function(t) {
     store: store,
     viewLoader: viewLoader
   });
-  var routeAction = routeActionCreator.route('baz', { store: store });
+  var routeAction = routeActionCreator.route('404', { store: store });
   routeAction(function() {
     t.looseEqual(actions, [
       {
         type: RouteActionTypes.ROUTE_REQUEST,
         payload: {
-          url: 'baz'
+          url: '404'
         }
       },
       {
         type: RouteActionTypes.ROUTE_ERROR,
         payload: {
-          url: 'baz',
-          viewName: 'baz',
+          url: '404',
+          viewName: '404',
+          component: 'component'
+        }
+      },
+    ]);
+  });
+});
+
+test('non-existent route', function(t) {
+  t.plan(1);
+  var actions = [];
+  var store = new Store(function(action, state) {
+    return state;
+  });
+  store.dispatch = function(action, callback) {
+    actions.push(action);
+    callback && callback();
+  };
+  var routeActionCreator = new RouteActionCreator(routes, {
+    store: store,
+    viewLoader: viewLoader
+  });
+  var routeAction = routeActionCreator.route('fail', { store: store });
+  routeAction(function() {
+    t.looseEqual(actions, [
+      {
+        type: RouteActionTypes.ROUTE_REQUEST,
+        payload: {
+          url: 'fail'
+        }
+      },
+      {
+        type: RouteActionTypes.ROUTE_ERROR,
+        payload: {
+          url: 'fail',
+          viewName: '404',
           component: 'component'
         }
       },
