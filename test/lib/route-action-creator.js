@@ -6,6 +6,10 @@ var IS_CLIENT = require('../../lib/is-client');
 var RouteActionTypes = require('../../lib/route-action-types');
 var RouteActionCreator = require('../../lib/route-action-creator');
 
+var getHistoryLength = function() {
+  return IS_CLIENT ? window.history.length : null;
+};
+
 var routes = {
   'foo': function() {
     this.render('foo');
@@ -34,7 +38,7 @@ test('`route` returns a function', function(t) {
 });
 
 test('route where `render` is called', function(t) {
-  t.plan(1);
+  t.plan(2);
   var actions = [];
   var store = new Store(function(action, state) {
     return state;
@@ -47,8 +51,60 @@ test('route where `render` is called', function(t) {
     store: store,
     viewLoader: viewLoader
   });
-  var routeAction = routeActionCreator.route('foo', { store: store });
+  var routeAction = routeActionCreator.route('foo', {
+    store: store
+  });
+  var initialHistoryLength = getHistoryLength();
   routeAction(function() {
+    if (IS_CLIENT) {
+      t.equal(getHistoryLength(), initialHistoryLength + 1);
+    } else {
+      t.pass();
+    }
+    t.looseEqual(actions, [
+      {
+        type: RouteActionTypes.ROUTE_REQUEST,
+        payload: {
+          url: 'foo'
+        }
+      },
+      {
+        type: RouteActionTypes.ROUTE_SUCCESS,
+        payload: {
+          url: 'foo',
+          viewName: 'foo',
+          component: 'component'
+        }
+      },
+    ]);
+  });
+});
+
+test('route where `render` is called, with `isPopState` set to `true`', function(t) {
+  t.plan(2);
+  var actions = [];
+  var store = new Store(function(action, state) {
+    return state;
+  });
+  store.dispatch = function(action, callback) {
+    actions.push(action);
+    callback && callback();
+  };
+  var routeActionCreator = new RouteActionCreator(routes, {
+    store: store,
+    viewLoader: viewLoader
+  });
+  var routeAction = routeActionCreator.route('foo', {
+    store: store,
+    isPopstate: true
+  });
+  var initialHistoryLength = getHistoryLength();
+  routeAction(function() {
+    if (IS_CLIENT) {
+      t.equal(getHistoryLength(), initialHistoryLength);
+    } else {
+      t.pass();
+    }
     t.looseEqual(actions, [
       {
         type: RouteActionTypes.ROUTE_REQUEST,
@@ -82,7 +138,9 @@ test('route where `route` is called', function(t) {
     store: store,
     viewLoader: viewLoader
   });
-  var routeAction = routeActionCreator.route('bar', { store: store });
+  var routeAction = routeActionCreator.route('bar', {
+    store: store
+  });
   routeAction(function() {
     if (IS_CLIENT) {
       // On the client-side, just route to `foo`.
@@ -126,7 +184,9 @@ test('route where `error` is called', function(t) {
     store: store,
     viewLoader: viewLoader
   });
-  var routeAction = routeActionCreator.route('404', { store: store });
+  var routeAction = routeActionCreator.route('404', {
+    store: store
+  });
   routeAction(function() {
     t.looseEqual(actions, [
       {
@@ -161,7 +221,9 @@ test('non-existent route', function(t) {
     store: store,
     viewLoader: viewLoader
   });
-  var routeAction = routeActionCreator.route('fail', { store: store });
+  var routeAction = routeActionCreator.route('fail', {
+    store: store
+  });
   routeAction(function() {
     t.looseEqual(actions, [
       {

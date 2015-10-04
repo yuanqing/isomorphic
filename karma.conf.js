@@ -27,22 +27,14 @@ module.exports = function(config) {
       'tape'
     ],
     preprocessors: {
-      'test/**/*.js': ['browserify'],
-      // 'test/client/*.jsx': ['browserify'],
-      // 'test/client/fixture.html': ['html2js'],
+      'test/**/*.js': ['browserify']
     },
     files: [
       'test/**/*.js'
-      // {
-      //   pattern: 'test/client/fixture.html',
-      //   included: false,
-      //   served: true,
-      //   watched: false
-      // }
     ],
     browserify: {
       transform: [
-        ['brfs'],
+        ['babelify'],
         [
           'browserify-istanbul',
           {

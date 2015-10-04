@@ -1,5 +1,5 @@
 {
-  "name": "kaki",
+  "name": "",
   "version": "0.0.0",
   "description": "",
   "author": "Lim Yuan Qing",
@@ -27,7 +27,7 @@
     "setimmediate.js": "~1.0.1"
   },
   "devDependencies": {
-    "brfs": "~1.4.1",
+    "babelify": "^6.3.0",
     "browserify": "~11.0.1",
     "browserify-istanbul": "~0.2.1",
     "del": "~1.2.0",
@@ -55,8 +55,6 @@
     "karma-browserify": "~4.3.0",
     "karma-chrome-launcher": "~0.2.0",
     "karma-coverage": "~0.5.2",
-    "karma-html2js-preprocessor": "~0.1.0",
-    "karma-react-jsx-preprocessor": "~0.1.1",
     "karma-tap": "~1.0.3",
     "karma-tape-reporter": "~1.0.3",
     "nopt": "~3.0.3",
