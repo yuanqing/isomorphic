@@ -50,11 +50,11 @@ Run all the JavaScript tests on both the server-side and client-side.
 
 Directory | Description
 :--|:--
-`assets` | Static assets to be served on the base URL `/assets`.
+`assets` | Static assets. Served on the base URL `/assets`.
 `config` | Configuration files. The configuration file that is used is determined by `NODE_ENV`.
 `css` | Our app Sass files.
 `js` | Our app JavaScript files.
-`lib` | The code for the core framework, consumed by code in the `js` directory. (Ideally, code in this directory can eventually be abstracted into a standalone npm module.)
+`lib` | The code for the core framework, consumed by code in the `js` directory. (Code in this directory can eventually be abstracted into a standalone npm module.)
 `test` | Tests for the code in `js` and `lib`.
 
 Some directories only exist locally (and should not be checked into source control):
@@ -62,5 +62,5 @@ Some directories only exist locally (and should not be checked into source contr
 Directory | Description
 :--|:--
 `coverage` | Test coverage reports.
-`dist` | Our compiled CSS and JS.
-`node_modules` | Dependencies installed via npm.
+`dist` | The compiled CSS and JS. Served on the base URL `/dist`.
+`node_modules` | Dependencies.
