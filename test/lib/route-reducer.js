@@ -4,7 +4,7 @@ var assign = require('../../lib/assign');
 var routeReducer = require('../../lib/route-reducer');
 var RouteActionCreator = require('../../lib/route-action-creator');
 
-var routeActionCreator = new RouteActionCreator({}, null);
+var routeActionCreator = new RouteActionCreator({});
 
 test('route to a given `url`', function(t) {
   t.plan(1);
@@ -21,18 +21,20 @@ test('route request', function(t) {
 
 test('route success', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeSuccess('/foo', 'FooComponent'), {}, assign), {
+  t.looseEqual(routeReducer(routeActionCreator.routeSuccess('/foo', 'bar', 'baz'), {}, assign), {
     url: '/foo',
-    componentName: 'FooComponent',
+    viewName: 'bar',
+    component: 'baz',
     isPending: false
   });
 });
 
 test('route error', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeError('/bar', 'BarComponent'), {}, assign), {
-    url: '/bar',
-    componentName: 'BarComponent',
+  t.looseEqual(routeReducer(routeActionCreator.routeError('/foo', 'bar', 'baz'), {}, assign), {
+    url: '/foo',
+    viewName: 'bar',
+    component: 'baz',
     isPending: false,
     error: true
   });

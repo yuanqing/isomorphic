@@ -1,9 +1,10 @@
 var test = require('tape');
 
 var Store = require('../../lib/store');
-var RouteActionCreator = require('../../lib/route-action-creator');
+var promise = require('../../lib/promise');
+var IS_CLIENT = require('../../lib/is-client');
 var RouteActionTypes = require('../../lib/route-action-types');
-var IS_SERVER = typeof window === 'undefined';
+var RouteActionCreator = require('../../lib/route-action-creator');
 
 var routes = {
   'foo': function() {
@@ -17,9 +18,17 @@ var routes = {
   }
 };
 
+var viewLoader = {
+  load: function() {
+    return promise(function(resolve) {
+      resolve('component');
+    });
+  }
+};
+
 test('`route` returns a function', function(t) {
   t.plan(1);
-  var routeActionCreator = new RouteActionCreator(routes, null);
+  var routeActionCreator = new RouteActionCreator(routes);
   var routeAction = routeActionCreator.route('foo');
   t.true(typeof routeAction === 'function');
 });
@@ -32,11 +41,12 @@ test('route where `render` is called', function(t) {
   });
   store.dispatch = function(action, callback) {
     actions.push(action);
-    if (callback) {
-      callback();
-    }
+    callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, store);
+  var routeActionCreator = new RouteActionCreator(routes, {
+    store: store,
+    viewLoader: viewLoader
+  });
   var routeAction = routeActionCreator.route('foo', { store: store });
   routeAction(function() {
     t.looseEqual(actions, [
@@ -50,7 +60,8 @@ test('route where `render` is called', function(t) {
         type: RouteActionTypes.ROUTE_SUCCESS,
         payload: {
           url: 'foo',
-          componentName: 'foo'
+          viewName: 'foo',
+          component: 'component'
         }
       },
     ]);
@@ -65,15 +76,24 @@ test('route where `route` is called', function(t) {
   });
   store.dispatch = function(action, callback) {
     actions.push(action);
-    if (callback) {
-      callback();
-    }
+    callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, store);
+  var routeActionCreator = new RouteActionCreator(routes, {
+    store: store,
+    viewLoader: viewLoader
+  });
   var routeAction = routeActionCreator.route('bar', { store: store });
   routeAction(function() {
-    if (IS_SERVER) {
-      // On the server, we will do a 301 redirect to `foo`.
+    if (IS_CLIENT) {
+      // On the client-side, just route to `foo`.
+      t.looseEqual(actions[0], {
+        type: RouteActionTypes.ROUTE_REQUEST,
+        payload: {
+          url: 'bar'
+        }
+      });
+    } else {
+      // On the server-side, do a 301 redirect to `foo`.
       t.looseEqual(actions, [
         {
           type: RouteActionTypes.ROUTE_REQUEST,
@@ -88,14 +108,6 @@ test('route where `route` is called', function(t) {
           }
         },
       ]);
-    } else {
-      // On the client, we will just route to `foo`.
-      t.looseEqual(actions[0], {
-        type: RouteActionTypes.ROUTE_REQUEST,
-        payload: {
-          url: 'bar'
-        }
-      });
     }
   });
 });
@@ -108,11 +120,12 @@ test('route where `error` is called', function(t) {
   });
   store.dispatch = function(action, callback) {
     actions.push(action);
-    if (callback) {
-      callback();
-    }
+    callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, store);
+  var routeActionCreator = new RouteActionCreator(routes, {
+    store: store,
+    viewLoader: viewLoader
+  });
   var routeAction = routeActionCreator.route('baz', { store: store });
   routeAction(function() {
     t.looseEqual(actions, [
@@ -126,7 +139,8 @@ test('route where `error` is called', function(t) {
         type: RouteActionTypes.ROUTE_ERROR,
         payload: {
           url: 'baz',
-          componentName: 'baz'
+          viewName: 'baz',
+          component: 'component'
         }
       },
     ]);

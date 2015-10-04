@@ -1,10 +1,7 @@
 var React = require('react');
-var bulkRequire = require('bulk-require');
-
-var IS_CLIENT = require('../lib/globals').IS_CLIENT;
+var IS_CLIENT = require('../lib/is-client');
 var Header = require('./partials/header');
 var Footer = require('./partials/footer');
-var containers = bulkRequire(__dirname + '/containers', ['*.js']);
 
 module.exports = React.createClass({
   mixins: IS_CLIENT ? [require('./store').mixin] : [],
@@ -12,12 +9,11 @@ module.exports = React.createClass({
     return this.props.state || {};
   },
   render: function() {
-    var Container = containers[this.state.route.containerName];
+    var View = this.state.route.component || require('views/' + this.state.route.viewName);
     return (
       <div>
         <Header />
-        {this.state.route && this.state.route.isPending ? <div className="LoadingOverlay"></div> : null}
-        <Container {...this.state} />
+        <View {...this.state} />
         <Footer />
       </div>
     );

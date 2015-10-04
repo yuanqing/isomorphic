@@ -16,6 +16,7 @@ var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
 var Controller = require('./Controller');
+var viewLoader = require('./view-loader');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
@@ -54,7 +55,10 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
-var routeActionCreator = new RouteActionCreator(routes);
+var routeActionCreator = new RouteActionCreator(routes, {
+  viewLoader: viewLoader
+});
+
 // Intercept all `get` requests.
 app.get('*', function(req, res) {
   // Initialise a new Store for every new request.
@@ -79,7 +83,8 @@ app.get('*', function(req, res) {
     // Serialise the `state`, and interpolate it into our template.
     res.end(tmpl({
       app: React.renderToString(reactElement),
-      state: JSON.stringify(state)
+      state: JSON.stringify(state),
+      viewName: state.route.viewName
     }));
   });
 });

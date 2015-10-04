@@ -1,7 +1,10 @@
+var fs = require('fs-extra');
 var del = require('del');
 var opn = require('opn');
+var glob = require('glob');
 var gulp = require('gulp');
 var nopt = require('nopt');
+var path = require('path');
 var sass = require('gulp-sass');
 var karma = require('karma');
 var gutil = require('gulp-util');
@@ -13,15 +16,17 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
-var bulkify = require('bulkify');
+var through = require('through2');
 var nodemon = require('gulp-nodemon');
 var reactify = require('reactify');
 var minifyCss = require('gulp-minify-css');
 var browserify = require('browserify');
 var sourcemaps = require('gulp-sourcemaps');
 var runSequence = require('run-sequence');
+var factorBundle = require('factor-bundle');
 var autoprefixer = require('gulp-autoprefixer');
 var istanbulCombine = require('istanbul-combine');
+
 var config = require('./config');
 
 // If this constant is `true`, minify our compiled JS and CSS.
@@ -34,8 +39,6 @@ var KARMA_CONF_FILE = __dirname + '/karma.conf.js';
 var DIST_DIR = 'dist';
 
 // Path to JS files.
-var JS_CLIENT_FILE = 'js/client.js';
-var JS_SERVER_FILE = 'js/server.js';
 var JS_ALL_DIRS = [
   'lib',
   'js'
@@ -44,22 +47,21 @@ var JS_ALL_FILES = [
   'lib/**/*.js',
   'js/**/*.js'
 ];
-var JS_TEST_FILES = 'test/**/*.js';
-var JS_DIST_DIR = DIST_DIR + '/js';
+var JS_SERVER_FILE = 'js/server.js';
+var JS_CLIENT_FILE = 'js/client.js';
+var JS_VIEWS_DIR = 'js/views';
+var JS_VENDOR_MODULES = ['react', 'firebase'];
+var JS_DIST_DIR = DIST_DIR + '/js/';
+var JS_DIST_COMMON_FILENAME = 'common.js';
 var JS_DIST_VENDOR_FILENAME = 'vendor.js';
-var JS_DIST_APP_FILENAME = 'app.js';
-
-// List of modules to bundle separately from our app's JS.
-var JS_VENDOR_MODULES = ['firebase', 'react'];
+var JS_DIST_CLIENT_FILE = DIST_DIR + '/' + JS_CLIENT_FILE;
+var JS_DIST_VIEWS_DIR = DIST_DIR + '/' + JS_VIEWS_DIR;
 
 // Directory to write coverage reports.
 var COVERAGE_DIR = 'coverage';
 var COVERAGE_FILENAME = 'coverage.json';
-var COVERAGE_COMBINED_HTML_FILE = COVERAGE_DIR + '/lcov-report/index.html';
 var COVERAGE_CLIENT_DIR = COVERAGE_DIR + '/client';
-var COVERAGE_CLIENT_HTML_FILE = COVERAGE_CLIENT_DIR + '/lcov-report/index.html';
 var COVERAGE_SERVER_DIR = COVERAGE_DIR + '/server';
-var COVERAGE_SERVER_HTML_FILE = COVERAGE_SERVER_DIR + '/lcov-report/index.html';
 var COVERAGE_JSON_FILES = COVERAGE_DIR + '/*/' + COVERAGE_FILENAME;
 
 // Path to CSS files.
@@ -117,7 +119,7 @@ gulp.task('test', function(callback) {
 // Run our tests on the server-side, and write coverage reports
 // to the `COVERAGE_SERVER_DIR`.
 gulp.task('test:server', shell.task([
-  'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape ' + JS_TEST_FILES,
+  'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape test/**/*.js'
 ]));
 
 // Run our tests on the client-side, and write coverage reports
@@ -153,17 +155,17 @@ gulp.task('test:combine-coverage', function(callback) {
 // Generate and open the combined coverage report (server-side and
 // client-side).
 gulp.task('coverage', ['test'], function(callback) {
-  openUrl(COVERAGE_COMBINED_HTML_FILE, callback);
+  openUrl(COVERAGE_DIR + '/lcov-report/index.html', callback);
 });
 
 // Generate and open the coverage report for the server-side tests.
 gulp.task('coverage:server', ['test:server'], function(callback) {
-  openUrl(COVERAGE_SERVER_HTML_FILE, callback);
+  openUrl(COVERAGE_SERVER_DIR + '/lcov-report/index.html', callback);
 });
 
 // Generate and open the coverage report for the client-side tests.
 gulp.task('coverage:client', ['test:client'], function(callback) {
-  openUrl(COVERAGE_CLIENT_HTML_FILE, callback);
+  openUrl(COVERAGE_CLIENT_DIR + '/lcov-report/index.html', callback);
 });
 
 // Build our JS and CSS.
@@ -172,32 +174,59 @@ gulp.task('build', ['build:js', 'build:css']);
 // Build the vendor JS and our app JS.
 gulp.task('build:js', ['build:js:vendor', 'build:js:app']);
 
-// Build vendor JS.
 gulp.task('build:js:vendor', function() {
-  var b = browserify();
-  return b.require(JS_VENDOR_MODULES)
+  return browserify()
+    .require(JS_VENDOR_MODULES)
     .bundle()
     .pipe(source(JS_DIST_VENDOR_FILENAME))
     .pipe(buffer())
-    .pipe(uglify())
     .pipe(gulp.dest(JS_DIST_DIR));
 });
 
 // Build our app JS.
 gulp.task('build:js:app', function() {
-  var b = browserify({
-    entries: JS_CLIENT_FILE,
-    transform: [reactify, bulkify, envify]
+  // Make sure the `JS_DIST_VIEWS_DIR` directory exists (the `factor-bundle`
+  // plugin will error otherwise).
+  fs.ensureDirSync(JS_DIST_VIEWS_DIR);
+  // Each file in `JS_VIEWS_DIR` is bundled separately. Each entry file in the
+  // `inputFiles` array is output to the corresponding path in the
+  // `outputFiles` array.
+  var inputFiles = glob.sync(JS_VIEWS_DIR + '/*.js');
+  var outputFiles = inputFiles.map(function(file) {
+    return JS_DIST_VIEWS_DIR + '/' + path.basename(file);
   });
-  return b.external(JS_VENDOR_MODULES)
+  // The `JS_CLIENT_FILE` is also an entry point. Append to the `inputFiles`
+  // and `outputFiles` arrays accordingly.
+  inputFiles = inputFiles.concat(JS_CLIENT_FILE);
+  outputFiles = outputFiles.concat(JS_DIST_CLIENT_FILE);
+  return browserify({
+    // Add inline sourcemaps if not production.
+    debug: !IS_PRODUCTION,
+    entries: inputFiles,
+    transform: [reactify, envify],
+  }).external(JS_VENDOR_MODULES)
+    .on('factor.pipeline', function (file, pipeline) {
+      pipeline.get('pack').unshift(through.obj(function(row, encoding, callback) {
+        // Assign an `id` so that we can get a reference to each `view` module
+        // eg. via `require('views/home')` when we load each view
+        // bundle on demand.
+        if (row.entry) {
+          row.id = 'views/' + path.basename(row.sourceFile, '.js');
+        }
+        callback(null, row);
+      }));
+    })
+    // Code that is specific to each file in the `entryFiles` array will be
+    // bundled separately -- written to the corresponding file in the
+    // `outputFiles` array.
+    .plugin(factorBundle, { output: outputFiles })
     .bundle()
-    .pipe(source(JS_DIST_APP_FILENAME))
+    // Code common to every file in the `entryFiles` array will be written
+    // to the file named `JS_DIST_COMMON_FILENAME`.
+    .pipe(source(JS_DIST_COMMON_FILENAME))
     .pipe(buffer())
-    .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.init({
-      loadMaps: true
-    })))
-    .pipe(gulpIf(IS_PRODUCTION, uglify()))
-    .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.write('.')))
+    // // Minify if production.
+    // .pipe(gulpIf(IS_PRODUCTION, uglify()))
     .pipe(gulp.dest(JS_DIST_DIR));
 });
 

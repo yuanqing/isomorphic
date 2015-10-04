@@ -1,4 +1,4 @@
-var StoreActionCreator = require('./action-creators/store-action-creator');
+var storeActionCreator = require('./action-creators/store-action-creator');
 
 module.exports = {
 
@@ -11,12 +11,13 @@ module.exports = {
     var render = function() {
       self.render('store');
     };
+
     var storeSlug = params.store_slug;
     var stores = store.getState().stores; // stores as in shops
     if (stores && stores[storeSlug]) {
       return render();
     }
-    store.dispatch(StoreActionCreator.fetchProducts(storeSlug), render);
+    store.dispatch(storeActionCreator.fetchProducts(storeSlug), render);
   },
 
   'help': function() {
