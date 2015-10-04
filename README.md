@@ -64,3 +64,13 @@ Directory | Description
 `coverage` | Test coverage reports.
 `dist` | The compiled CSS and JS. Served on the base URL `/dist`.
 `node_modules` | Dependencies.
+
+## Todo
+
+- [Firebase](lib/firebase.js): patching/updates, tests
+- [ViewLoader](lib/view-loader.js): tests
+- [XHR](lib/xhr.js): `POST`, `PUT`, `DELETE`, tests
+- [Asset versioning](https://github.com/sindresorhus/gulp-rev)
+- Authentication / sessions
+- i18n
+- Deployment
