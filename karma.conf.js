@@ -3,7 +3,13 @@ module.exports = function(config) {
     basePath: '.',
     browserNoActivityTimeout: 5000,
     singleRun: true,
-    browsers: [process.env.TRAVIS ? 'Chrome_travis_ci' : 'Chrome'],
+    customLaunchers: {
+      ChromeTravis: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
+      }
+    },
+    browsers: [process.env.TRAVIS ? 'ChromeTravis' : 'Chrome'],
     frameworks: [
       'browserify',
       'tap'
