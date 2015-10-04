@@ -1,7 +1,7 @@
 var firebase = require('../firebase');
 
 module.exports = {
-  getProducts: function(storeSlug) {
+  getProducts: function() {
     return firebase.get('products');
   },
   setQuantity: function(productSlug, quantity) {

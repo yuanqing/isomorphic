@@ -13,7 +13,7 @@ var envify = require('envify');
 var gulpIf = require('gulp-if');
 var eslint = require('gulp-eslint');
 var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
+// var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var through = require('through2');
@@ -225,8 +225,6 @@ gulp.task('build:js:app', function() {
     // to the file named `JS_DIST_COMMON_FILENAME`.
     .pipe(source(JS_DIST_COMMON_FILENAME))
     .pipe(buffer())
-    // // Minify if production.
-    // .pipe(gulpIf(IS_PRODUCTION, uglify()))
     .pipe(gulp.dest(JS_DIST_DIR));
 });
 
@@ -243,6 +241,7 @@ gulp.task('build:css', function() {
       cascade: false
     }))
     .pipe(gulpIf(IS_PRODUCTION, minifyCss({
+      // Remove all comments, no exceptions.
       keepSpecialComments: 0
     })))
     .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.write('.')))
