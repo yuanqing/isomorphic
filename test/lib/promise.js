@@ -34,9 +34,9 @@ test('`promise.all` accepts an object', function(t) {
     t.looseEquals(result, {
       x: 'foo',
       y: 42
-    }, function() {
-      t.fail();
     });
+  }, function() {
+    t.fail();
   });
 });
 
