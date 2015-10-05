@@ -26,7 +26,7 @@ var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/index.html', 'utf8'));
 // Initialise.
 var app = express();
 
-// Disable a header.
+// Disable an `Express` header.
 app.disable('x-powered-by');
 
 // Gzip.
@@ -35,9 +35,10 @@ app.use(compression());
 // Serve favicon.
 app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
 
-// Serve the `/dist` and `/assets` directories.
-app.use('/dist', express.static(ROOT_DIR + '/dist'));
+// Serve the `/assets`, `/css` and `/js` directories.
 app.use('/assets', express.static(ROOT_DIR + '/assets'));
+app.use('/css', express.static(ROOT_DIR + '/dist/css'));
+app.use('/js', express.static(ROOT_DIR + '/dist/js'));
 
 // Set up sessions.
 var RedisStore = connectRedis(expressSession);
