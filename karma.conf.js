@@ -27,10 +27,10 @@ module.exports = function(config) {
       'tape'
     ],
     preprocessors: {
-      'test/**/*.js': ['browserify']
+      'test/lib/**/*.js': ['browserify']
     },
     files: [
-      'test/**/*.js'
+      'test/lib/**/*.js'
     ],
     browserify: {
       transform: [

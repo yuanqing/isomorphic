@@ -28,6 +28,7 @@ var autoprefixer = require('gulp-autoprefixer');
 var istanbulCombine = require('istanbul-combine');
 
 var config = require('./config');
+var testServer = require('./test/server');
 
 // If this constant is `true`, minify our compiled JS and CSS.
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -68,6 +69,7 @@ var COVERAGE_JSON_FILES = COVERAGE_DIR + '/*/' + COVERAGE_FILENAME;
 var CSS_MAIN_FILE = 'css/index.scss';
 var CSS_ALL_FILES = 'css/**/*.scss';
 var CSS_DIST_DIR = DIST_DIR + '/css';
+var CSS_DIST_FILENAME = 'style.css';
 
 // The URL we're serving our app at.
 var APP_URL = 'http://localhost:' + config.expressPort;
@@ -116,15 +118,30 @@ gulp.task('test', function(callback) {
   runSequence('test:server', 'test:client', 'test:combine-coverage', callback);
 });
 
+var server = null;
+gulp.task('test:setup', function(callback) {
+  server = testServer.listen(3142, callback);
+});
+gulp.task('test:teardown', function(callback) {
+  server.close(callback);
+  server = null;
+});
+
 // Run our tests on the server-side, and write coverage reports
 // to the `COVERAGE_SERVER_DIR`.
-gulp.task('test:server', shell.task([
-  'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape test/**/*.js'
+gulp.task('test:server', function(callback) {
+  runSequence('test:setup', 'test:server:run', 'test:teardown', callback);
+});
+gulp.task('test:server:run', shell.task([
+  'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape test/lib/*.js'
 ]));
 
 // Run our tests on the client-side, and write coverage reports
 // to `COVERAGE_CLIENT_DIR`.
 gulp.task('test:client', function(callback) {
+  runSequence('test:setup', 'test:client:run', 'test:teardown', callback);
+});
+gulp.task('test:client:run', function(callback) {
   new karma.Server({
     configFile: KARMA_CONF_FILE,
     coverageReporter: {
@@ -235,7 +252,7 @@ gulp.task('build:css', function() {
       loadMaps: true
     })))
     .pipe(sass())
-    .pipe(concat('style.css'))
+    .pipe(concat(CSS_DIST_FILENAME))
     .pipe(autoprefixer({
       browsers: ['last 2 versions'],
       cascade: false
