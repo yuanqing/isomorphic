@@ -8,7 +8,7 @@ var storeActionCreator = require('./action-creators/store-action-creator');
 var routeActionCreator = require('./action-creators/route-action-creator');
 
 React.render(<Controller state={window.__STATE__} />,
-  document.querySelector('.__APP__'));
+  document.querySelector('.app'));
 
 // Connect to Firebase and listen to changes.
 firebase.listen(function(data) {
