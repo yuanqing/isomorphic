@@ -13,7 +13,7 @@ var envify = require('envify');
 var gulpIf = require('gulp-if');
 var eslint = require('gulp-eslint');
 var concat = require('gulp-concat');
-// var uglify = require('gulp-uglify');
+var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var through = require('through2');
@@ -189,8 +189,11 @@ gulp.task('coverage:client', ['test:client'], function(callback) {
 gulp.task('build', ['build:js', 'build:css']);
 
 // Build the vendor JS and our app JS.
-gulp.task('build:js', ['build:js:vendor', 'build:js:app']);
+gulp.task('build:js', function(callback) {
+  runSequence(['build:js:vendor', 'build:js:app'], 'build:js:minify', callback);
+});
 
+// Build some dependencies separately to speed up `browserify`.
 gulp.task('build:js:vendor', function() {
   return browserify()
     .require(JS_VENDOR_MODULES)
@@ -243,6 +246,16 @@ gulp.task('build:js:app', function() {
     .pipe(source(JS_DIST_COMMON_FILENAME))
     .pipe(buffer())
     .pipe(gulp.dest(JS_DIST_DIR));
+});
+
+// Minify JS.
+gulp.task('build:js:minify', function() {
+  return gulp.src(JS_DIST_DIR + '/**/*.js')
+    .pipe(IS_PRODUCTION ? uglify() : gutil.noop())
+    .pipe(gulp.dest(function(data) {
+      // Override the original files.
+      return data.base;
+    }));
 });
 
 // Build our CSS.
