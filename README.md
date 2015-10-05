@@ -69,7 +69,6 @@ Directory | Description
 
 - [Firebase](lib/firebase.js): patching/updates, tests
 - [ViewLoader](lib/view-loader.js): tests
-- [XHR](lib/xhr.js): `POST`, `PUT`, `DELETE`, tests
 - [Asset versioning](https://github.com/sindresorhus/gulp-rev)
 - Authentication / sessions
 - i18n
