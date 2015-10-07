@@ -60,7 +60,6 @@
     "karma-tape-reporter": "~1.0.3",
     "nopt": "~3.0.3",
     "opn": "~3.0.2",
-    "react-tools": "~0.13.3",
     "reactify": "~1.1.1",
     "run-sequence": "~1.1.2",
     "tape": "~4.2.0",
