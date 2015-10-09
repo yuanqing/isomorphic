@@ -2,12 +2,6 @@ var React = require('react');
 var test = require('tape');
 var Store = require('../../../lib/store');
 
-var createFixture = function() {
-  var element = document.createElement('div');
-  document.body.appendChild(element);
-  return element;
-};
-
 test('pass the Store `mixin` to a React component', function(t) {
   t.plan(9);
   var reducer = function(action, state, assign) {
@@ -34,8 +28,10 @@ test('pass the Store `mixin` to a React component', function(t) {
   });
   t.equal(store.listeners.length, 0);
   t.looseEqual(renderedStates, []);
-  var element = createFixture();
-  React.render(<Component state={store.getState()} />, element);
+  // Create fixture
+  var fixture = document.createElement('div');
+  document.body.appendChild(fixture);
+  React.render(<Component state={store.getState()} />, fixture);
   t.equal(store.listeners.length, 1);
   t.looseEqual(renderedStates, [
     { foo: 1 }
@@ -46,6 +42,6 @@ test('pass the Store `mixin` to a React component', function(t) {
     { foo: 1 },
     { foo: 2 }
   ]);
-  React.unmountComponentAtNode(element);
+  React.unmountComponentAtNode(fixture);
   t.equal(store.listeners.length, 0);
 });
