@@ -1,7 +1,14 @@
 var fs = require('fs');
 var test = require('tape');
-var click = require('phantom-click');
-var linkInterceptor = require('../../../lib/link-interceptor');
+var linkClickInterceptor = require('../../../lib/link-click-interceptor');
+
+var click = function(element, opts) {
+  opts = opts || {};
+  opts.bubbles = true;
+  opts.cancelable = true;
+  var event = new MouseEvent('click', opts);
+  element.dispatchEvent(event);
+};
 
 var $ = function(selector) {
   return document.querySelector(selector);
@@ -15,10 +22,10 @@ test('setup', function(t) {
   t.plan(1);
   // Create and attach the fixture to the DOM.
   fixture = document.createElement('div');
-  fixture.innerHTML = fs.readFileSync(__dirname + '/fixture.html', 'utf-8');
+  fixture.innerHTML = fs.readFileSync(__dirname + '/fixtures/index.html', 'utf-8');
   document.body.appendChild(fixture);
-  // Hook up events.
-  teardown = linkInterceptor(function(url, options) {
+  // Hook up events for intercepting link clicks.
+  teardown = linkClickInterceptor(function(url, options) {
     callback(url, options);
   });
   t.pass();
@@ -53,7 +60,7 @@ test('internal link, nested', function(t) {
   click($('.link-nested'));
 });
 
-test('internal link, shift-click', function(t) {
+test('internal link, cmd-click', function(t) {
   t.plan(1);
   setTimeout(function() {
     t.pass();
@@ -61,21 +68,21 @@ test('internal link, shift-click', function(t) {
   callback = function() {
     t.fail();
   };
-  click($('.link'), {
-    shiftKey: true
+  click($('.link-cmd-click'), {
+    metaKey: true
   });
 });
 
-// test('internal link, with `target` set to `_blank`', function(t) {
-//   t.plan(1);
-//   setTimeout(function() {
-//     t.pass();
-//   }, 500);
-//   callback = function() {
-//     t.fail();
-//   };
-//   click($('.link-target-blank'));
-// });
+test('internal link, with `target` set to `_blank`', function(t) {
+  t.plan(1);
+  setTimeout(function() {
+    t.pass();
+  }, 500);
+  callback = function() {
+    t.fail();
+  };
+  click($('.link-target-blank'));
+});
 
 test('popstate', function(t) {
   t.plan(3);
@@ -96,7 +103,7 @@ test('popstate', function(t) {
 
 test('teardown', function(t) {
   t.plan(1);
-  // Unattach the bound events.
+  // Unattach events for intercepting link clicks.
   teardown();
   // Remove the fixture.
   fixture.parentNode.removeChild(fixture);

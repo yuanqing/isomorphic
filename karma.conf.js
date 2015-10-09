@@ -1,7 +1,7 @@
 module.exports = function(config) {
   config.set({
     basePath: '.',
-    browserNoActivityTimeout: 5000,
+    browserNoActivityTimeout: 10000,
     singleRun: true,
     customLaunchers: {
       ChromeTravis: {
@@ -30,8 +30,18 @@ module.exports = function(config) {
       'test/lib/**/*.js': ['browserify']
     },
     files: [
-      'test/lib/**/*.js'
+      'test/lib/**/*.js',
+      {
+        pattern: 'test/lib/client/fixtures/*.html',
+        watched: false,
+        included: false,
+        served: true,
+        nocache: false
+      }
     ],
+    proxies: {
+      '/fixtures/': '/base/test/lib/client/fixtures/'
+    },
     browserify: {
       transform: [
         ['babelify'],

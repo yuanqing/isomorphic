@@ -153,7 +153,15 @@ gulp.task('test:client:run', function(callback) {
         { type: 'text' }
       ]
     }
-  }, callback).start();
+  }, function(exitCode) {
+    if (exitCode !== 0) {
+      throw new gutil.PluginError({
+        plugin: 'test:client:run',
+        message: 'errored'
+      });
+    }
+    callback();
+  }).start();
 });
 
 // Combine the server-side and client-side coverage reports.
