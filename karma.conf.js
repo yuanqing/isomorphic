@@ -42,7 +42,7 @@ module.exports = function(config) {
               '**/node_modules/**',
               '**/test/**'
             ],
-            defaultIgnore: true
+            defaultIgnore: false
           }
         ]
       ]
