@@ -60,7 +60,7 @@ test('internal link, nested', function(t) {
   click($('.link-nested'));
 });
 
-test('internal link, cmd-click', function(t) {
+test('internal link, shift-click', function(t) {
   t.plan(1);
   setTimeout(function() {
     t.pass();
@@ -68,8 +68,8 @@ test('internal link, cmd-click', function(t) {
   callback = function() {
     t.fail();
   };
-  click($('.link-cmd-click'), {
-    metaKey: true
+  click($('.link-shift-click'), {
+    shiftKey: true
   });
 });
 
