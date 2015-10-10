@@ -3,7 +3,7 @@ var RouteActionCreator = require('../action-creators/route-action-creator');
 
 var store = require('../store');
 
-var Component = React.createClass({
+module.exports = React.createClass({
   render: function() {
     return (
       <div className="Home">
@@ -17,5 +17,3 @@ var Component = React.createClass({
     );
   }
 });
-
-module.exports = Component;

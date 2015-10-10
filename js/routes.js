@@ -1,3 +1,17 @@
+var bulk = require('bulk-require');
+var routes = bulk(__dirname, ['routes/*.js']).routes;
+
+module.exports = {
+  '': routes.home,
+  '404': routes.error,
+  'help': function() {
+    this.route('faq');
+  },
+  'faq': routes.faq,
+  'stores/:storeSlug': routes.store
+};
+
+/*
 var storeActionCreator = require('./action-creators/store-action-creator');
 
 module.exports = {
@@ -32,3 +46,4 @@ module.exports = {
   }
 
 };
+*/

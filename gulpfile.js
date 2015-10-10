@@ -17,6 +17,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
+var bulkify = require('bulkify');
 var through = require('through2');
 var nodemon = require('gulp-nodemon');
 var reactify = require('reactify');
@@ -234,6 +235,8 @@ gulp.task('build:js:app', function() {
     transform: [
       // Compile JSX.
       reactify,
+      // Allow requiring by a glob.
+      bulkify,
       // Replace any `process.browser` with a `true` constant.
       bpb,
       // Replace any `process.env.NODE_ENV` with a plain string.
