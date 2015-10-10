@@ -1,6 +1,10 @@
 var storeActionCreator = require('../action-creators/store-action-creator');
 
-module.exports = function(params, store) {
+var stores = function() {
+  this.render('home');
+};
+
+stores.store = function(params, store) {
   var self = this;
   var render = function() {
     self.render('store');
@@ -12,3 +16,5 @@ module.exports = function(params, store) {
   }
   store.dispatch(storeActionCreator.fetchProducts(storeSlug), render);
 };
+
+module.exports = stores;
