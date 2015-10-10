@@ -234,9 +234,9 @@ gulp.task('build:js:app', function() {
     transform: [
       // Compile JSX.
       reactify,
-      // Replace any `process.browser` with `true` constants.
+      // Replace any `process.browser` with a `true` constant.
       bpb,
-      // Replace any `process.env` with plain strings in `NODE_ENV`.
+      // Replace any `process.env.NODE_ENV` with a plain string.
       envify
     ],
   }).external(JS_VENDOR_MODULES)
@@ -252,7 +252,7 @@ gulp.task('build:js:app', function() {
       }));
     })
     // Code that is specific to each file in the `entryFiles` array will be
-    // bundled separately -- written to the corresponding file in the
+    // bundled separately ie. written to the corresponding file in the
     // `outputFiles` array.
     .plugin(factorBundle, { output: outputFiles })
     .bundle()
