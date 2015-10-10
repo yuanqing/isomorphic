@@ -228,7 +228,7 @@ gulp.task('build:js:app', function() {
   inputFiles = inputFiles.concat(JS_CLIENT_FILE);
   outputFiles = outputFiles.concat(JS_DIST_CLIENT_FILE);
   return browserify({
-    // Add inline sourcemaps if not production.
+    // Add inline sourcemaps.
     debug: !IS_PRODUCTION,
     entries: inputFiles,
     transform: [
@@ -246,7 +246,7 @@ gulp.task('build:js:app', function() {
         // eg. via `require('views/home')` when we load each view
         // bundle on demand.
         if (row.entry) {
-          row.id = 'views/' + path.basename(row.sourceFile, '.js');
+          row.id = 'views/' + path.basename(row.file, '.js');
         }
         callback(null, row);
       }));
