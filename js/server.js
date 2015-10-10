@@ -15,7 +15,7 @@ var RouteActionCreator = require('../lib/route-action-creator');
 var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
-var Controller = require('./Controller');
+var MainComponent = require('./main');
 var componentLoader = require('./component-loader');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
@@ -26,7 +26,7 @@ var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/index.html', 'utf8'));
 // Initialise.
 var app = express();
 
-// Disable an `Express` header.
+// Remove the `x-powered-by` header.
 app.disable('x-powered-by');
 
 // Gzip.
@@ -77,7 +77,7 @@ app.get('*', function(req, res) {
         return res.redirect(redirectUrl);
       }
     }
-    var reactElement = React.createElement(Controller, {
+    var reactElement = React.createElement(MainComponent, {
       store: store,
       state: state
     });

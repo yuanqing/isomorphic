@@ -4,11 +4,11 @@ var linkClickInterceptor = require('../lib/link-click-interceptor');
 
 var store = require('./store');
 var firebase = require('./firebase');
-var Controller = require('./controller');
+var MainComponent = require('./main');
 var routeActionCreator = require('./action-creators/route-action-creator');
 var storeActionCreator = require('./action-creators/store-action-creator');
 
-React.render(<Controller state={window.__STATE__} />,
+React.render(<MainComponent state={window.__STATE__} />,
   document.querySelector('.app'));
 
 linkClickInterceptor(function(url, opts) {
