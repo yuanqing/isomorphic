@@ -50,7 +50,7 @@ Run all the JavaScript tests on both the server-side and client-side.
 
 Directory | Description
 :--|:--
-`assets` | Static assets. Served on the base URL `/assets`.
+`assets` | Static assets.
 `config` | Configuration files. The configuration file that is used is determined by `NODE_ENV`.
 `css` | Our app Sass files.
 `js` | Our app JavaScript files.
@@ -62,13 +62,13 @@ Some directories only exist locally (and should not be checked into source contr
 Directory | Description
 :--|:--
 `coverage` | Test coverage reports.
-`dist` | The compiled CSS and JS. Served on the base URL `/dist`.
+`dist` | Our compiled CSS and JS.
 `node_modules` | Dependencies.
 
 ## Todo
 
 - [Firebase](lib/firebase.js): patching/updates, tests
-- [ViewLoader](lib/view-loader.js): tests
+- [ComponentLoader](lib/component-loader.js): tests
 - [Asset versioning](https://github.com/sindresorhus/gulp-rev)
 - Authentication / sessions
 - i18n
