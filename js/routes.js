@@ -6,13 +6,12 @@ module.exports = {
     this.render('home');
   },
 
-  'stores/:store_slug': function(params, store) {
+  'stores/:storeSlug': function(params, store) {
     var self = this;
     var render = function() {
       self.render('store');
     };
-
-    var storeSlug = params.store_slug;
+    var storeSlug = params.storeSlug;
     var stores = store.getState().stores; // stores as in shops
     if (stores && stores[storeSlug]) {
       return render();
