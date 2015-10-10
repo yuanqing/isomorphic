@@ -6,8 +6,9 @@ var express = require('express');
 var compression = require('compression');
 var connectRedis = require('connect-redis');
 var serveFavicon = require('serve-favicon');
-var lodashTemplate = require('lodash.template');
 var expressSession = require('express-session');
+var lodashTemplate = require('lodash.template');
+var ReactDOMServer = require('react-dom/server');
 
 var Store = require('../lib/store');
 var RouteActionCreator = require('../lib/route-action-creator');
@@ -83,7 +84,7 @@ app.get('*', function(req, res) {
     });
     // Serialise the `state`, and interpolate it into our template.
     res.end(tmpl({
-      app: React.renderToString(reactElement),
+      app: ReactDOMServer.renderToString(reactElement),
       state: JSON.stringify(state),
       viewName: state.route.viewName
     }));
