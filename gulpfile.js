@@ -1,4 +1,5 @@
 var fs = require('fs-extra');
+var bpb = require('bpb');
 var del = require('del');
 var opn = require('opn');
 var glob = require('glob');
@@ -230,7 +231,14 @@ gulp.task('build:js:app', function() {
     // Add inline sourcemaps if not production.
     debug: !IS_PRODUCTION,
     entries: inputFiles,
-    transform: [reactify, envify],
+    transform: [
+      // Compile JSX.
+      reactify,
+      // Replace any `process.browser` with `true` constants.
+      bpb,
+      // Replace any `process.env` with plain strings in `NODE_ENV`.
+      envify
+    ],
   }).external(JS_VENDOR_MODULES)
     .on('factor.pipeline', function (file, pipeline) {
       pipeline.get('pack').unshift(through.obj(function(row, encoding, callback) {

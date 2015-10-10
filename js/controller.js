@@ -1,10 +1,9 @@
 var React = require('react');
-var IS_CLIENT = require('../lib/is-client');
 var Header = require('./partials/header');
 var Footer = require('./partials/footer');
 
 module.exports = React.createClass({
-  mixins: IS_CLIENT ? [require('./store').mixin] : [],
+  mixins: process.browser ? [require('./store').mixin] : [],
   getInitialState: function() {
     return this.props.state || {};
   },
