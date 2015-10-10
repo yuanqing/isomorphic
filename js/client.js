@@ -1,6 +1,6 @@
 var React = require('react');
 
-var linkInterceptor = require('../lib/link-interceptor');
+var linkClickInterceptor = require('../lib/link-click-interceptor');
 
 var store = require('./store');
 var firebase = require('./firebase');
@@ -11,7 +11,7 @@ var storeActionCreator = require('./action-creators/store-action-creator');
 React.render(<Controller state={window.__STATE__} />,
   document.querySelector('.app'));
 
-linkInterceptor(function(url, opts) {
+linkClickInterceptor(function(url, opts) {
   store.dispatch(routeActionCreator.route(url, opts));
 });
 

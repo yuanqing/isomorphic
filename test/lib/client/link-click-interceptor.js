@@ -2,16 +2,16 @@ var fs = require('fs');
 var test = require('tape');
 var linkClickInterceptor = require('../../../lib/link-click-interceptor');
 
-var click = function(element, opts) {
+var $ = function(selector) {
+  return document.querySelector(selector);
+};
+
+var clickElement = function(element, opts) {
   opts = opts || {};
   opts.bubbles = true;
   opts.cancelable = true;
   var event = new MouseEvent('click', opts);
   element.dispatchEvent(event);
-};
-
-var $ = function(selector) {
-  return document.querySelector(selector);
 };
 
 var fixture;
@@ -22,11 +22,11 @@ test('setup', function(t) {
   t.plan(1);
   // Create and attach the fixture to the DOM.
   fixture = document.createElement('div');
-  fixture.innerHTML = fs.readFileSync(__dirname + '/fixtures/index.html', 'utf-8');
+  fixture.innerHTML = fs.readFileSync(__dirname + '/fixtures/index.html', 'utf8');
   document.body.appendChild(fixture);
-  // Hook up events for intercepting link clicks.
-  teardown = linkClickInterceptor(function(url, options) {
-    callback(url, options);
+  // Attach events for intercepting link clicks.
+  teardown = linkClickInterceptor(function() {
+    callback.apply(null, arguments);
   });
   t.pass();
 });
@@ -39,28 +39,28 @@ test('non-link', function(t) {
   callback = function() {
     t.fail();
   };
-  click($('.non-link'));
+  clickElement($('.non-link'));
 });
 
-test('internal link', function(t) {
+test('link', function(t) {
   t.plan(2);
   callback = function(url, options) {
     t.equal(url, '/foo');
     t.equal(options, undefined);
   };
-  click($('.link'));
+  clickElement($('.link'));
 });
 
-test('internal link, nested', function(t) {
+test('link, nested', function(t) {
   t.plan(2);
   callback = function(url, options) {
     t.equal(url, '/bar');
     t.equal(options, undefined);
   };
-  click($('.link-nested'));
+  clickElement($('.link-nested'));
 });
 
-test('internal link, shift-click', function(t) {
+test('link, shift-click', function(t) {
   t.plan(1);
   setTimeout(function() {
     t.pass();
@@ -68,12 +68,12 @@ test('internal link, shift-click', function(t) {
   callback = function() {
     t.fail();
   };
-  click($('.link-shift-click'), {
+  clickElement($('.link-shift-click'), {
     shiftKey: true
   });
 });
 
-test('internal link, with `target` set to `_blank`', function(t) {
+test('link, with `target` set to `_blank`', function(t) {
   t.plan(1);
   setTimeout(function() {
     t.pass();
@@ -81,24 +81,27 @@ test('internal link, with `target` set to `_blank`', function(t) {
   callback = function() {
     t.fail();
   };
-  click($('.link-target-blank'));
+  clickElement($('.link-target-blank'));
 });
 
 test('popstate', function(t) {
-  t.plan(3);
+  t.plan(5);
   // Add a single item to `window.history`.
   var initialPathname = window.location.pathname;
   window.history.pushState(null, null, '/qux');
   t.equal(window.location.pathname, '/qux');
-  // Go back.
-  window.history.back();
+  // Go `back`.
   callback = function(url, options) {
     t.equal(url, initialPathname);
     t.looseEqual(options, { isPopstate: true });
-    // Unset the `callback`, before going forward.
-    callback = function() {};
+    // Go `forward`.
+    callback = function(url, options) {
+      t.equal(url, '/qux');
+      t.looseEqual(options, { isPopstate: true });
+    };
     window.history.forward();
   };
+  window.history.back();
 });
 
 test('teardown', function(t) {

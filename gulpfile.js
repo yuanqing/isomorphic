@@ -118,6 +118,7 @@ gulp.task('test', function(callback) {
   runSequence('test:server', 'test:client', 'test:combine-coverage', callback);
 });
 
+// Set up and tear down our test server (for testing XHR).
 var server = null;
 gulp.task('test:setup', function(callback) {
   server = testServer.listen(3142, callback);
@@ -130,18 +131,22 @@ gulp.task('test:teardown', function(callback) {
 // Run our tests on the server-side, and write coverage reports
 // to the `COVERAGE_SERVER_DIR`.
 gulp.task('test:server', function(callback) {
-  runSequence('test:setup', 'test:server:run', 'test:teardown', callback);
+  runSequence('test:setup', 'test:run:server', function() {
+    runSequence('test:teardown', callback);
+  });
 });
-gulp.task('test:server:run', shell.task([
+gulp.task('test:run:server', shell.task([
   'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape test/lib/*.js'
 ]));
 
 // Run our tests on the client-side, and write coverage reports
 // to `COVERAGE_CLIENT_DIR`.
 gulp.task('test:client', function(callback) {
-  runSequence('test:setup', 'test:client:run', 'test:teardown', callback);
+  runSequence('test:setup', 'test:run:client', function() {
+    runSequence('test:teardown', callback);
+  });
 });
-gulp.task('test:client:run', function(callback) {
+gulp.task('test:run:client', function(callback) {
   new karma.Server({
     configFile: KARMA_CONF_FILE,
     coverageReporter: {
@@ -153,13 +158,7 @@ gulp.task('test:client:run', function(callback) {
         { type: 'text' }
       ]
     }
-  }, function(exitCode) {
-    if (exitCode !== 0) {
-      throw new gutil.PluginError({
-        plugin: 'test:client:run',
-        message: 'errored'
-      });
-    }
+  }, function() {
     callback();
   }).start();
 });

@@ -16,7 +16,7 @@ var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
 var Controller = require('./Controller');
-var viewLoader = require('./view-loader');
+var componentLoader = require('./component-loader');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
@@ -57,7 +57,7 @@ app.use(expressSession({
 }));
 
 var routeActionCreator = new RouteActionCreator(routes, {
-  viewLoader: viewLoader
+  componentLoader: componentLoader
 });
 
 // Intercept all `get` requests.

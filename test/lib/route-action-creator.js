@@ -22,7 +22,7 @@ var routes = {
   }
 };
 
-var viewLoader = {
+var componentLoader = {
   load: function() {
     return promise(function(resolve) {
       resolve('component');
@@ -49,7 +49,7 @@ test('route where `render` is called', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    viewLoader: viewLoader
+    componentLoader: componentLoader
   });
   var routeAction = routeActionCreator.route('foo', {
     store: store
@@ -92,7 +92,7 @@ test('route where `render` is called, with `isPopState` set to `true`', function
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    viewLoader: viewLoader
+    componentLoader: componentLoader
   });
   var routeAction = routeActionCreator.route('foo', {
     store: store,
@@ -136,7 +136,7 @@ test('route where `route` is called', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    viewLoader: viewLoader
+    componentLoader: componentLoader
   });
   var routeAction = routeActionCreator.route('bar', {
     store: store
@@ -182,7 +182,7 @@ test('route where `error` is called', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    viewLoader: viewLoader
+    componentLoader: componentLoader
   });
   var routeAction = routeActionCreator.route('404', {
     store: store
@@ -219,7 +219,7 @@ test('non-existent route', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    viewLoader: viewLoader
+    componentLoader: componentLoader
   });
   var routeAction = routeActionCreator.route('fail', {
     store: store
