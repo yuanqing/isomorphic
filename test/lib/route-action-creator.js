@@ -2,12 +2,11 @@ var test = require('tape');
 
 var Store = require('../../lib/store');
 var promise = require('../../lib/promise');
-var IS_CLIENT = require('../../lib/is-client');
 var RouteActionTypes = require('../../lib/route-action-types');
 var RouteActionCreator = require('../../lib/route-action-creator');
 
 var getHistoryLength = function() {
-  return IS_CLIENT ? window.history.length : null;
+  return process.browser ? window.history.length : null;
 };
 
 var routes = {
@@ -56,7 +55,7 @@ test('route where `render` is called', function(t) {
   });
   var initialHistoryLength = getHistoryLength();
   routeAction(function() {
-    if (IS_CLIENT) {
+    if (process.browser) {
       t.equal(getHistoryLength(), initialHistoryLength + 1);
     } else {
       t.pass();
@@ -100,7 +99,7 @@ test('route where `render` is called, with `isPopState` set to `true`', function
   });
   var initialHistoryLength = getHistoryLength();
   routeAction(function() {
-    if (IS_CLIENT) {
+    if (process.browser) {
       t.equal(getHistoryLength(), initialHistoryLength);
     } else {
       t.pass();
@@ -142,7 +141,7 @@ test('route where `route` is called', function(t) {
     store: store
   });
   routeAction(function() {
-    if (IS_CLIENT) {
+    if (process.browser) {
       // On the client-side, just route to `foo`.
       t.looseEqual(actions[0], {
         type: RouteActionTypes.ROUTE_REQUEST,

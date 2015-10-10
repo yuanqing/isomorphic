@@ -45,6 +45,7 @@ module.exports = function(config) {
     browserify: {
       transform: [
         ['babelify'],
+        ['bpb'],
         ['brfs'],
         [
           'browserify-istanbul',
