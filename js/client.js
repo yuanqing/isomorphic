@@ -1,4 +1,5 @@
 var React = require('react');
+var ReactDom = require('react-dom');
 
 var linkClickInterceptor = require('../lib/link-click-interceptor');
 
@@ -8,7 +9,7 @@ var MainComponent = require('./main');
 var routeActionCreator = require('./action-creators/route-action-creator');
 var storeActionCreator = require('./action-creators/store-action-creator');
 
-React.render(<MainComponent state={window.__STATE__} />,
+ReactDom.render(<MainComponent state={window.__STATE__} />,
   document.querySelector('.app'));
 
 linkClickInterceptor(function(url, opts) {
