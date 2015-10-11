@@ -33,7 +33,8 @@ var istanbulCombine = require('istanbul-combine');
 var config = require('./config');
 var testServer = require('./test/server');
 
-// If this constant is `true`, minify our compiled JS and CSS.
+// `NODE_ENV` defaults to `development`.
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 // Path to `karma.conf.js`.
@@ -208,7 +209,12 @@ gulp.task('build:js', function(callback) {
     'build:locales',
     'build:js:vendor',
     'build:js:app'
-  ], 'build:js:minify', callback);
+  ], function() {
+    if (IS_PRODUCTION) {
+      return runSequence('build:js:minify', callback);
+    }
+    callback();
+  });
 });
 
 // Browserify the locale files.
@@ -230,9 +236,8 @@ gulp.task('build:locales', function(callback) {
 
 // Build some dependencies separately to speed up `browserify`.
 gulp.task('build:js:vendor', function() {
-  return browserify({
-      debug: false
-    })
+  return browserify()
+    .transform(envify)
     .require(JS_VENDOR_MODULES)
     .bundle()
     .pipe(source(JS_DIST_VENDOR_FILENAME))
@@ -256,17 +261,17 @@ gulp.task('build:js:app', function() {
   // and `outputFiles` arrays accordingly.
   inputFiles = inputFiles.concat(JS_CLIENT_FILE);
   outputFiles = outputFiles.concat(JS_DIST_CLIENT_FILE);
-  return browserify({
-    // Add sourcemaps inline.
-    // debug: !IS_PRODUCTION,
-    entries: inputFiles,
-    transform: [
-      reactify, // Compile JSX.
-      bulkify,  // Allow requiring by a glob.
-      bpb,      // Replace any `process.browser` with a `true` constant.
-      envify    // Replace any `process.env.NODE_ENV` with a plain string.
-    ],
+  return browserify(inputFiles, {
+    debug: !IS_PRODUCTION
   }).external(JS_VENDOR_MODULES)
+    // Compile JSX.
+    .transform(reactify)
+    // Allow requiring by a glob.
+    .transform(bulkify)
+    // Replace `process.browser` with `true`.
+    .transform(bpb)
+    // Replace `process.env.NODE_ENV` with the string.
+    .transform(envify)
     .on('factor.pipeline', function (file, pipeline) {
       pipeline.get('pack').unshift(through.obj(function(row, encoding, callback) {
         // Assign an `id` so that we can get a reference to each `view` module
@@ -293,7 +298,7 @@ gulp.task('build:js:app', function() {
 // Minify JS.
 gulp.task('build:js:minify', function() {
   return gulp.src(JS_DIST_DIR + '/**/*.js')
-    .pipe(IS_PRODUCTION ? uglify() : gutil.noop())
+    .pipe(uglify())
     .pipe(gulp.dest(function(data) {
       // Override the original files.
       return data.base;
@@ -303,9 +308,9 @@ gulp.task('build:js:minify', function() {
 // Build our CSS.
 gulp.task('build:css', function() {
   return gulp.src(CSS_MAIN_FILE)
-    .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.init({
+    .pipe(sourcemaps.init({
       loadMaps: true
-    })))
+    }))
     .pipe(sass())
     .pipe(concat(CSS_DIST_FILENAME))
     .pipe(autoprefixer({
@@ -316,7 +321,7 @@ gulp.task('build:css', function() {
       // Remove all comments, no exceptions.
       keepSpecialComments: 0
     })))
-    .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.write('.')))
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(CSS_DIST_DIR));
 });
 
