@@ -33,7 +33,7 @@ var istanbulCombine = require('istanbul-combine');
 var config = require('./config');
 var testServer = require('./test/server');
 
-// `NODE_ENV` defaults to `development`.
+// `process.env.NODE_ENV` defaults to `development`.
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -41,7 +41,7 @@ var IS_PRODUCTION = process.env.NODE_ENV === 'production';
 var KARMA_CONF_FILE = __dirname + '/karma.conf.js';
 
 // Directory to write our compiled JS and CSS.
-var DIST_DIR = 'dist';
+var DIST_DIR = './dist';
 
 // Path to locales files.
 var LOCALES_DIR = './locales';
@@ -49,16 +49,16 @@ var LOCALES_DIST_DIR = DIST_DIR + '/locales';
 
 // Path to JS files.
 var JS_ALL_DIRS = [
-  'lib',
-  'js'
+  './lib',
+  './js'
 ];
 var JS_ALL_FILES = [
-  'lib/**/*.js',
-  'js/**/*.js'
+  './lib/**/*.js',
+  './js/**/*.js'
 ];
-var JS_SERVER_FILE = 'js/server.js';
-var JS_CLIENT_FILE = 'js/client.js';
-var JS_VIEWS_DIR = 'js/views';
+var JS_SERVER_FILE = './js/server.js';
+var JS_CLIENT_FILE = './js/client.js';
+var JS_VIEWS_DIR = './js/views';
 var JS_VENDOR_MODULES = ['react', 'react-dom', 'firebase'];
 var JS_DIST_DIR = DIST_DIR + '/js/';
 var JS_DIST_COMMON_FILENAME = 'common.js';
@@ -67,15 +67,15 @@ var JS_DIST_CLIENT_FILE = DIST_DIR + '/' + JS_CLIENT_FILE;
 var JS_DIST_VIEWS_DIR = DIST_DIR + '/' + JS_VIEWS_DIR;
 
 // Directory to write coverage reports.
-var COVERAGE_DIR = 'coverage';
+var COVERAGE_DIR = './coverage';
 var COVERAGE_FILENAME = 'coverage.json';
 var COVERAGE_CLIENT_DIR = COVERAGE_DIR + '/client';
 var COVERAGE_SERVER_DIR = COVERAGE_DIR + '/server';
 var COVERAGE_JSON_FILES = COVERAGE_DIR + '/*/' + COVERAGE_FILENAME;
 
 // Path to CSS files.
-var CSS_MAIN_FILE = 'css/index.scss';
-var CSS_ALL_FILES = 'css/**/*.scss';
+var CSS_MAIN_FILE = './css/index.scss';
+var CSS_ALL_FILES = './css/**/*.scss';
 var CSS_DIST_DIR = DIST_DIR + '/css';
 var CSS_DIST_FILENAME = 'style.css';
 
@@ -90,7 +90,8 @@ var args = nopt({
   o: ['--open', 'google chrome']
 });
 
-// Helper for opening the given `url` in Chrome.
+// Helper for opening the given `url` in Chrome. Calls the `callback`
+// on success.
 var openUrl = function(url, callback) {
   gutil.log(gutil.colors.green('Opening', url));
   opn(url, {
@@ -112,7 +113,7 @@ gulp.task('clean:coverage', function(callback) {
   del(COVERAGE_DIR, callback);
 });
 
-// Lint our JS.
+// Lint JS.
 gulp.task('lint', function() {
   // Also lint this `gulpfile.js`.
   return gulp.src(JS_ALL_FILES.concat(__filename))
@@ -126,7 +127,7 @@ gulp.task('test', function(callback) {
   runSequence('test:server', 'test:client', 'test:combine-coverage', callback);
 });
 
-// Set up and tear down our test server (for testing XHR).
+// Set up and tear down our test server.
 var server = null;
 gulp.task('test:setup', function(callback) {
   server = testServer.listen(3142, callback);
@@ -136,8 +137,7 @@ gulp.task('test:teardown', function(callback) {
   server = null;
 });
 
-// Run our tests on the server-side, and write coverage reports
-// to the `COVERAGE_SERVER_DIR`.
+// Run tests on the server-side, and generate test coverage reports.
 gulp.task('test:server', function(callback) {
   runSequence('test:setup', 'test:run:server', function() {
     runSequence('test:teardown', callback);
@@ -147,8 +147,7 @@ gulp.task('test:run:server', shell.task([
   'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape test/lib/*.js'
 ]));
 
-// Run our tests on the client-side, and write coverage reports
-// to `COVERAGE_CLIENT_DIR`.
+// Run tests on the client-side, and generate test coverage reports.
 gulp.task('test:client', function(callback) {
   runSequence('test:setup', 'test:run:client', function() {
     runSequence('test:teardown', callback);
@@ -171,7 +170,7 @@ gulp.task('test:run:client', function(callback) {
   }).start();
 });
 
-// Combine the server-side and client-side coverage reports.
+// Combine the server-side and client-side test coverage reports.
 gulp.task('test:combine-coverage', function(callback) {
   istanbulCombine({
     dir: COVERAGE_DIR,
@@ -184,38 +183,23 @@ gulp.task('test:combine-coverage', function(callback) {
   }, callback);
 });
 
-// Generate and open the combined coverage report (server-side and
-// client-side).
+// Generate and open the combined coverage report.
 gulp.task('coverage', ['test'], function(callback) {
   openUrl(COVERAGE_DIR + '/lcov-report/index.html', callback);
 });
 
-// Generate and open the coverage report for the server-side tests.
+// Generate and open the server-side test coverage report.
 gulp.task('coverage:server', ['test:server'], function(callback) {
   openUrl(COVERAGE_SERVER_DIR + '/lcov-report/index.html', callback);
 });
 
-// Generate and open the coverage report for the client-side tests.
+// Generate and open the client-side test coverage report.
 gulp.task('coverage:client', ['test:client'], function(callback) {
   openUrl(COVERAGE_CLIENT_DIR + '/lcov-report/index.html', callback);
 });
 
-// Build our JS and CSS.
-gulp.task('build', ['build:js', 'build:css']);
-
-// Build the vendor JS and our app JS.
-gulp.task('build:js', function(callback) {
-  runSequence([
-    'build:locales',
-    'build:js:vendor',
-    'build:js:app'
-  ], function() {
-    if (IS_PRODUCTION) {
-      return runSequence('build:js:minify', callback);
-    }
-    callback();
-  });
-});
+// Build JS and CSS.
+gulp.task('build', ['build:locales', 'build:js', 'build:css']);
 
 // Browserify the locale files.
 gulp.task('build:locales', function(callback) {
@@ -234,7 +218,14 @@ gulp.task('build:locales', function(callback) {
   }, callback);
 });
 
-// Build some dependencies separately to speed up `browserify`.
+// Build the vendor JS and our app JS. Only minify when building
+// for production.
+gulp.task('build:js', function(callback) {
+  var tasks = ['build:js:vendor', 'build:js:app'];
+  runSequence(IS_PRODUCTION ? tasks.concat('build:js:minify') : tasks, callback);
+});
+
+// Build the vendor JS.
 gulp.task('build:js:vendor', function() {
   return browserify()
     .transform(envify)
@@ -247,8 +238,8 @@ gulp.task('build:js:vendor', function() {
 
 // Build our app JS.
 gulp.task('build:js:app', function() {
-  // Make sure the `JS_DIST_VIEWS_DIR` directory exists (the `factor-bundle`
-  // plugin will error otherwise).
+  // Make sure the `JS_DIST_VIEWS_DIR` directory exists. The `factor-bundle`
+  // plugin will error otherwise.
   fs.ensureDirSync(JS_DIST_VIEWS_DIR);
   // Each file in `JS_VIEWS_DIR` is bundled separately. Each entry file in the
   // `inputFiles` array is output to the corresponding path in the
@@ -295,7 +286,7 @@ gulp.task('build:js:app', function() {
     .pipe(gulp.dest(JS_DIST_DIR));
 });
 
-// Minify JS.
+// Minify our JS.
 gulp.task('build:js:minify', function() {
   return gulp.src(JS_DIST_DIR + '/**/*.js')
     .pipe(uglify())
@@ -305,7 +296,7 @@ gulp.task('build:js:minify', function() {
     }));
 });
 
-// Build our CSS.
+// Build our CSS. Only minify when building for production.
 gulp.task('build:css', function() {
   return gulp.src(CSS_MAIN_FILE)
     .pipe(sourcemaps.init({
@@ -317,11 +308,11 @@ gulp.task('build:css', function() {
       browsers: ['last 2 versions'],
       cascade: false
     }))
+    .pipe(sourcemaps.write('.'))
     .pipe(gulpIf(IS_PRODUCTION, minifyCss({
       // Remove all comments, no exceptions.
       keepSpecialComments: 0
     })))
-    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(CSS_DIST_DIR));
 });
 
