@@ -1,6 +1,6 @@
-var ComponentLoader = require('lib/component-loader');
+var ViewLoader = require('lib/view-loader');
 
-module.exports = new ComponentLoader({
+module.exports = new ViewLoader({
   moduleNamePrefix: 'js/views/',
   baseUrl: '/',
   initialViewName: window.__STATE__.route.viewName
