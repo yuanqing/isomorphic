@@ -7,7 +7,7 @@ module.exports = require('lib/root-component')({
     return this.props.state || {};
   },
   render: function() {
-    var View = this.state.route.component || require('views/' + this.state.route.viewName);
+    var View = require('js/views/' + this.state.route.viewName);
     return (
       <div>
         <Header />

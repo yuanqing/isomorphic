@@ -24,7 +24,6 @@ test('route success', function(t) {
   t.looseEqual(routeReducer(routeActionCreator.routeSuccess('/foo', 'bar', 'baz'), {}, assign), {
     url: '/foo',
     viewName: 'bar',
-    component: 'baz',
     isPending: false
   });
 });
@@ -34,7 +33,6 @@ test('route error', function(t) {
   t.looseEqual(routeReducer(routeActionCreator.routeError('/foo', 'bar', 'baz'), {}, assign), {
     url: '/foo',
     viewName: 'bar',
-    component: 'baz',
     isPending: false,
     error: true
   });

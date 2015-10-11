@@ -19,7 +19,6 @@ var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
 var RootComponent = require('./root-component');
-var componentLoader = require('./component-loader');
 var localeActionCreator = require('./action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
@@ -64,9 +63,7 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
-var routeActionCreator = new RouteActionCreator(routes, {
-  componentLoader: componentLoader
-});
+var routeActionCreator = new RouteActionCreator(routes);
 
 // Intercept all `get` requests.
 app.get('*', function(request, response) {

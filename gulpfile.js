@@ -273,7 +273,7 @@ gulp.task('build:js:app', function() {
         // eg. via `require('views/home')` when we load each view
         // bundle on demand.
         if (row.entry) {
-          row.id = 'views/' + path.basename(row.file, '.js');
+          row.id = 'js/views/' + path.basename(row.file, '.js');
         }
         callback(null, row);
       }));

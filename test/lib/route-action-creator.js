@@ -24,7 +24,7 @@ var routes = {
 var componentLoader = {
   load: function() {
     return promise(function(resolve) {
-      resolve('component');
+      resolve();
     });
   }
 };
@@ -71,8 +71,7 @@ test('route where `render` is called', function(t) {
         type: RouteActionTypes.ROUTE_SUCCESS,
         payload: {
           url: 'foo',
-          viewName: 'foo',
-          component: 'component'
+          viewName: 'foo'
         }
       },
     ]);
@@ -115,8 +114,7 @@ test('route where `render` is called, with `isPopState` set to `true`', function
         type: RouteActionTypes.ROUTE_SUCCESS,
         payload: {
           url: 'foo',
-          viewName: 'foo',
-          component: 'component'
+          viewName: 'foo'
         }
       },
     ]);
@@ -198,8 +196,7 @@ test('route where `error` is called', function(t) {
         type: RouteActionTypes.ROUTE_ERROR,
         payload: {
           url: '404',
-          viewName: '404',
-          component: 'component'
+          viewName: '404'
         }
       },
     ]);
@@ -235,8 +232,7 @@ test('non-existent route', function(t) {
         type: RouteActionTypes.ROUTE_ERROR,
         payload: {
           url: 'fail',
-          viewName: '404',
-          component: 'component'
+          viewName: '404'
         }
       },
     ]);
