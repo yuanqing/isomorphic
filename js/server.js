@@ -1,8 +1,9 @@
 require('babel/register');
 var fs = require('fs');
 var path = require('path');
-var React = require('react');
+var React = global.React = require('react');
 var express = require('express');
+var Negotiator = require('negotiator');
 var compression = require('compression');
 var connectRedis = require('connect-redis');
 var serveFavicon = require('serve-favicon');
@@ -18,11 +19,15 @@ var routes = require('./routes');
 var reducers = require('./reducers');
 var MainComponent = require('./main');
 var componentLoader = require('./component-loader');
+var localeActionCreator = require('./action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
 // Read the template.
 var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/index.html', 'utf8'));
+
+// i18n.
+var supportedLanguages = ['en'];
 
 // Initialise.
 var app = express();
@@ -40,6 +45,7 @@ app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
 app.use('/assets', express.static(ROOT_DIR + '/assets'));
 app.use('/css', express.static(ROOT_DIR + '/dist/css'));
 app.use('/js', express.static(ROOT_DIR + '/dist/js'));
+app.use('/locales', express.static(ROOT_DIR + '/dist/locales'));
 
 // Set up sessions.
 var RedisStore = connectRedis(expressSession);
@@ -62,20 +68,26 @@ var routeActionCreator = new RouteActionCreator(routes, {
 });
 
 // Intercept all `get` requests.
-app.get('*', function(req, res) {
+app.get('*', function(request, response) {
   // Initialise a new Store for every new request.
   var store = new Store(reducers);
+  // Determine the requested language.
+  var negotiator = new Negotiator(request);
+  var language = negotiator.language(supportedLanguages);
+  var locale = language + '-sg';
+  // Set the `locale` before we populate our `store`.
+  store.dispatch(localeActionCreator.setLocale(locale));
   // Pass in the empty `store` to the `route` method.
-  store.dispatch(routeActionCreator.route(req.url, { store: store })).then(function() {
+  store.dispatch(routeActionCreator.route(request.url, { store: store })).then(function() {
     var state = store.getState();
     // Check if there was an error or if we need to redirect.
     if (state.route.error) {
-      res.status(404);
+      response.status(404);
     } else {
       var redirectUrl = state.route.redirectUrl;
       if (redirectUrl) {
-        res.status(301);
-        return res.redirect(redirectUrl);
+        response.status(301);
+        return response.redirect(redirectUrl);
       }
     }
     var reactElement = React.createElement(MainComponent, {
@@ -83,10 +95,11 @@ app.get('*', function(req, res) {
       state: state
     });
     // Serialise the `state`, and interpolate it into our template.
-    res.end(tmpl({
+    response.end(tmpl({
       app: ReactDOMServer.renderToString(reactElement),
       state: JSON.stringify(state),
-      viewName: state.route.viewName
+      viewName: state.route.viewName,
+      locale: state.locale
     }));
   });
 });

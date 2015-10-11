@@ -1,6 +1,8 @@
-var React = require('react');
+// var React = require('react');
 
-module.exports = React.createClass({
+// console.log(require('../../lib/components/component'));
+
+module.exports = require('../../lib/components/component')({
   render: function() {
     return (
       <div className="Header">

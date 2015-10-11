@@ -199,7 +199,11 @@ gulp.task('build', ['build:js', 'build:css']);
 
 // Build the vendor JS and our app JS.
 gulp.task('build:js', function(callback) {
-  runSequence(['build:js:vendor', 'build:js:app'], 'build:js:minify', callback);
+  runSequence([
+    'build:js:vendor',
+    'build:js:locales',
+    'build:js:app'
+  ], 'build:js:minify', callback);
 });
 
 // Build some dependencies separately to speed up `browserify`.
@@ -210,6 +214,15 @@ gulp.task('build:js:vendor', function() {
     .pipe(source(JS_DIST_VENDOR_FILENAME))
     .pipe(buffer())
     .pipe(gulp.dest(JS_DIST_DIR));
+});
+
+gulp.task('build:js:locales', function() {
+  return browserify()
+    .require('./locales/en-sg.js', { expose: 'locales/en-sg' })
+    .bundle()
+    .pipe(source('en-sg.js'))
+    .pipe(buffer())
+    .pipe(gulp.dest('dist/locales/'));
 });
 
 // Build our app JS.
@@ -229,18 +242,14 @@ gulp.task('build:js:app', function() {
   inputFiles = inputFiles.concat(JS_CLIENT_FILE);
   outputFiles = outputFiles.concat(JS_DIST_CLIENT_FILE);
   return browserify({
-    // Add inline sourcemaps.
+    // Add sourcemaps inline.
     debug: !IS_PRODUCTION,
     entries: inputFiles,
     transform: [
-      // Compile JSX.
-      reactify,
-      // Allow requiring by a glob.
-      bulkify,
-      // Replace any `process.browser` with a `true` constant.
-      bpb,
-      // Replace any `process.env.NODE_ENV` with a plain string.
-      envify
+      reactify, // Compile JSX.
+      bulkify,  // Allow requiring by a glob.
+      bpb,      // Replace any `process.browser` with a `true` constant.
+      envify    // Replace any `process.env.NODE_ENV` with a plain string.
     ],
   }).external(JS_VENDOR_MODULES)
     .on('factor.pipeline', function (file, pipeline) {
