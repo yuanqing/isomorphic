@@ -75,7 +75,8 @@
   },
   "scripts": {
     "start": "gulp",
-    "test": "gulp test"
+    "test": "gulp test",
+    "postinstall": "mkdir -p node_modules && ln -s lib node_modules/lib && ln -s js node_modules/js"
   },
   "private": true
 }
