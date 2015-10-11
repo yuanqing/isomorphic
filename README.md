@@ -71,7 +71,7 @@ Directory | Description
 - Move to [watchify](https://github.com/substack/watchify)
 - [Stop using mixins](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750)
 - [Firebase](lib/firebase.js): patching/updates, tests
-- [ComponentLoader](lib/component-loader.js): tests
+- [ViewLoader](lib/view-loader.js): tests
 - [Asset versioning](https://github.com/sindresorhus/gulp-rev)
 - Authentication / sessions
 - Deployment
