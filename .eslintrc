@@ -58,7 +58,7 @@
     "react/no-multi-comp": 2,
     "react/no-unknown-property": 2,
     "react/prop-types": 0,
-    "react/react-in-jsx-scope": 2,
+    "react/react-in-jsx-scope": 0,
     "react/require-extension": [2, {
       "extensions": [".js", ".jsx"]
     }],
