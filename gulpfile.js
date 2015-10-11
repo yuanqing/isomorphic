@@ -21,7 +21,7 @@ var source = require('vinyl-source-stream');
 var bulkify = require('bulkify');
 var through = require('through2');
 var nodemon = require('gulp-nodemon');
-var reactify = require('reactify');
+var babelify = require('babelify');
 var minifyCss = require('gulp-minify-css');
 var browserify = require('browserify');
 var sourcemaps = require('gulp-sourcemaps');
@@ -139,18 +139,28 @@ gulp.task('test:teardown', function(callback) {
 
 // Run tests on the server-side, and generate test coverage reports.
 gulp.task('test:server', function(callback) {
-  runSequence('test:setup', 'test:run:server', function() {
-    runSequence('test:teardown', callback);
+  runSequence('test:setup', 'test:run:server', function(err) {
+    runSequence('test:teardown', function() {
+      if (err) {
+        throw err;
+      }
+      callback(err);
+    });
   });
 });
 gulp.task('test:run:server', shell.task([
-  'istanbul --dir=' + COVERAGE_SERVER_DIR + ' cover -- tape test/lib/*.js'
+  'istanbul --dir=' + COVERAGE_SERVER_DIR + ' -x=**/config/** cover -- tape test/lib/*.js'
 ]));
 
 // Run tests on the client-side, and generate test coverage reports.
 gulp.task('test:client', function(callback) {
-  runSequence('test:setup', 'test:run:client', function() {
-    runSequence('test:teardown', callback);
+  runSequence('test:setup', 'test:run:client', function(err) {
+    runSequence('test:teardown', function() {
+      if (err) {
+        throw err;
+      }
+      callback(err);
+    });
   });
 });
 gulp.task('test:run:client', function(callback) {
@@ -165,9 +175,7 @@ gulp.task('test:run:client', function(callback) {
         { type: 'text' }
       ]
     }
-  }, function() {
-    callback();
-  }).start();
+  }, callback).start();
 });
 
 // Combine the server-side and client-side test coverage reports.
@@ -256,7 +264,7 @@ gulp.task('build:js:app', function() {
     debug: !IS_PRODUCTION
   }).external(JS_VENDOR_MODULES)
     // Compile JSX.
-    .transform(reactify)
+    .transform(babelify)
     // Allow requiring by a glob.
     .transform(bulkify)
     // Replace `process.browser` with `true`.

@@ -51,7 +51,7 @@ module.exports = function(config) {
           'browserify-istanbul',
           {
             ignore: [
-              '**/node_modules/**',
+              '**/config/**',
               '**/test/**'
             ],
             defaultIgnore: false

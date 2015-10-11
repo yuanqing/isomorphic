@@ -1,7 +1,8 @@
 var test = require('tape');
 var React = require('react');
+var ReactDom = require('react-dom');
 
-var Store = require('lib/store');
+var Store = require('../../../lib/store');
 
 test('pass the Store `mixin` to a React component', function(t) {
   t.plan(9);
@@ -33,7 +34,7 @@ test('pass the Store `mixin` to a React component', function(t) {
   var fixture = document.createElement('div');
   document.body.appendChild(fixture);
   // Render the component.
-  React.render(<Component state={store.getState()} />, fixture);
+  ReactDom.render(<Component state={store.getState()} />, fixture);
   t.equal(store.listeners.length, 1);
   t.looseEqual(renderedStates, [
     { foo: 1 }
@@ -46,7 +47,7 @@ test('pass the Store `mixin` to a React component', function(t) {
     { foo: 2 }
   ]);
   // Unmount the component from the DOM.
-  React.unmountComponentAtNode(fixture);
+  ReactDom.unmountComponentAtNode(fixture);
   t.equal(store.listeners.length, 0);
   // Remove the fixture from the DOM.
   fixture.parentNode.removeChild(fixture);

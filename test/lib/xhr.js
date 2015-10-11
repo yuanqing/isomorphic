@@ -1,6 +1,6 @@
 var test = require('tape');
 
-var xhr = require('lib/xhr');
+var xhr = require('../../lib/xhr');
 var config = require('../../config');
 
 var URL = 'http://localhost:' + config.testPort;
