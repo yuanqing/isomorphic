@@ -130,7 +130,7 @@ gulp.task('test', function(callback) {
 // Set up and tear down our test server.
 var server = null;
 gulp.task('test:setup', function(callback) {
-  server = testServer.listen(3142, callback);
+  server = testServer.listen(config.testPort, callback);
 });
 gulp.task('test:teardown', function(callback) {
   server.close(callback);

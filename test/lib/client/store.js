@@ -1,6 +1,7 @@
-var React = require('react');
 var test = require('tape');
-var Store = require('../../../lib/store');
+var React = require('react');
+
+var Store = require('lib/store');
 
 test('pass the Store `mixin` to a React component', function(t) {
   t.plan(9);
@@ -28,20 +29,25 @@ test('pass the Store `mixin` to a React component', function(t) {
   });
   t.equal(store.listeners.length, 0);
   t.looseEqual(renderedStates, []);
-  // Create fixture
+  // Create and append fixture to the DOM.
   var fixture = document.createElement('div');
   document.body.appendChild(fixture);
+  // Render the component.
   React.render(<Component state={store.getState()} />, fixture);
   t.equal(store.listeners.length, 1);
   t.looseEqual(renderedStates, [
     { foo: 1 }
   ]);
+  // Dispatch an action.
   store.dispatch({ type: 'bar' });
   t.equal(store.listeners.length, 1);
   t.looseEqual(renderedStates, [
     { foo: 1 },
     { foo: 2 }
   ]);
+  // Unmount the component from the DOM.
   React.unmountComponentAtNode(fixture);
   t.equal(store.listeners.length, 0);
+  // Remove the fixture from the DOM.
+  fixture.parentNode.removeChild(fixture);
 });

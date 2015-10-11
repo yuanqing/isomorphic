@@ -1,6 +1,7 @@
 var fs = require('fs');
 var test = require('tape');
-var linkClickInterceptor = require('../../../lib/link-click-interceptor');
+
+var linkClickInterceptor = require('lib/link-click-interceptor');
 
 var $ = function(selector) {
   return document.querySelector(selector);

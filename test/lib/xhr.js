@@ -1,8 +1,9 @@
 var test = require('tape');
 
-var xhr = require('../../lib/xhr');
+var xhr = require('lib/xhr');
+var config = require('../../config');
 
-var URL = 'http://localhost:3142';
+var URL = 'http://localhost:' + config.testPort;
 
 test('has all the RESTful methods', function(t) {
   t.plan(6);

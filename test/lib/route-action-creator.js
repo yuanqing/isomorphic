@@ -1,9 +1,9 @@
 var test = require('tape');
 
-var Store = require('../../lib/store');
-var promise = require('../../lib/promise');
-var RouteActionTypes = require('../../lib/route-action-types');
-var RouteActionCreator = require('../../lib/route-action-creator');
+var Store = require('lib/store');
+var promise = require('lib/promise');
+var RouteActionTypes = require('lib/route-action-types');
+var RouteActionCreator = require('lib/route-action-creator');
 
 var getHistoryLength = function() {
   return process.browser ? window.history.length : null;
