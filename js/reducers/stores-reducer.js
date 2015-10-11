@@ -1,4 +1,4 @@
-var StoreActionTypes = require('../action-types/store-action-types');
+var StoreActionTypes = require('js/action-types/store-action-types');
 
 module.exports = function(action, state, assign) {
   switch (action.type) {

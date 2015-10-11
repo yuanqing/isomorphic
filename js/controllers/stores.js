@@ -1,4 +1,4 @@
-var storeActionCreator = require('../action-creators/store-action-creator');
+var storeActionCreator = require('js/action-creators/store-action-creator');
 
 var stores = function() {
   this.render('home');

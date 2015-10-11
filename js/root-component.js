@@ -1,10 +1,7 @@
-var React = require('react');
 var Header = require('./partials/header');
 var Footer = require('./partials/footer');
 
-var createMainComponent = require('../lib/components/main-component');
-
-module.exports = createMainComponent({
+module.exports = require('lib/root-component')({
   mixins: process.browser ? [require('./store').mixin] : [],
   getInitialState: function() {
     return this.props.state || {};

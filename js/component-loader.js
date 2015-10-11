@@ -1,4 +1,4 @@
-var ComponentLoader = require('../lib/component-loader');
+var ComponentLoader = require('lib/component-loader');
 
 module.exports = new ComponentLoader('views', {
   basePath: __dirname,

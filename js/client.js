@@ -1,15 +1,15 @@
-var React = require('react');
+var React = window.React = require('react');
 var ReactDom = require('react-dom');
 
-var linkClickInterceptor = require('../lib/link-click-interceptor');
+var linkClickInterceptor = require('lib/link-click-interceptor');
 
 var store = require('./store');
 var firebase = require('./firebase');
-var MainComponent = require('./main');
+var RootComponent = require('./root-component');
 var routeActionCreator = require('./action-creators/route-action-creator');
 var storeActionCreator = require('./action-creators/store-action-creator');
 
-ReactDom.render(<MainComponent state={store.getState()} />,
+ReactDom.render(<RootComponent state={store.getState()} />,
   document.querySelector('.app'));
 
 linkClickInterceptor(function(url, opts) {

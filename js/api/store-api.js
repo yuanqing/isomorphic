@@ -1,4 +1,4 @@
-var firebase = require('../firebase');
+var firebase = require('js/firebase');
 
 module.exports = {
   getProducts: function() {

@@ -1,10 +1,9 @@
-var React = require('react');
 var map = require('savoy').map;
 
-var StoreActionCreator = require('../action-creators/store-action-creator');
-var fluxStore = require('../store');
+var StoreActionCreator = require('js/action-creators/store-action-creator');
+var fluxStore = require('js/store');
 
-module.exports = React.createClass({
+module.exports = require('lib/component')({
   render: function() {
     var products = [];
     map(this.props.stores || [], function(store) {

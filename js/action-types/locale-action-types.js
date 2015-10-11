@@ -1,3 +1,3 @@
-module.exports = require('../../lib/constants')([
+module.exports = require('lib/constants')([
   'SET_LOCALE',
 ]);

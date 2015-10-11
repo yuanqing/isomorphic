@@ -1,6 +1,6 @@
 var fold = require('savoy').fold;
-var StoreAPI = require('../api/store-api');
-var StoreActionTypes = require('../action-types/store-action-types');
+var StoreAPI = require('js/api/store-api');
+var StoreActionTypes = require('js/action-types/store-action-types');
 
 var StoreActionCreator = module.exports = {
 

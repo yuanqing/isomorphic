@@ -1,5 +1,4 @@
-var React = require('react');
-module.exports = require('../../lib/components/component')({
+module.exports = require('lib/component')({
   render: function() {
     return (
       <div className="Footer">

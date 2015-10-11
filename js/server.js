@@ -1,7 +1,8 @@
 require('babel/register');
+
 var fs = require('fs');
 var path = require('path');
-var React = require('react');
+var React = global.React = require('react');
 var express = require('express');
 var Negotiator = require('negotiator');
 var compression = require('compression');
@@ -11,13 +12,13 @@ var expressSession = require('express-session');
 var lodashTemplate = require('lodash.template');
 var ReactDOMServer = require('react-dom/server');
 
-var Store = require('../lib/store');
-var RouteActionCreator = require('../lib/route-action-creator');
+var Store = require('lib/store');
+var RouteActionCreator = require('lib/route-action-creator');
 
 var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
-var MainComponent = require('./main');
+var RootComponent = require('./root-component');
 var componentLoader = require('./component-loader');
 var localeActionCreator = require('./action-creators/locale-action-creator');
 
@@ -75,6 +76,7 @@ app.get('*', function(request, response) {
   var negotiator = new Negotiator(request);
   var language = negotiator.language(supportedLanguages);
   var locale = language + '-sg';
+  locale = 'en-sg';
   // Set the `locale` before we populate our `store`.
   store.dispatch(localeActionCreator.setLocale(locale));
   // Pass in the empty `store` to the `route` method.
@@ -90,7 +92,7 @@ app.get('*', function(request, response) {
         return response.redirect(redirectUrl);
       }
     }
-    var reactElement = React.createElement(MainComponent, {
+    var reactElement = React.createElement(RootComponent, {
       store: store,
       state: state
     });
