@@ -16,4 +16,6 @@ module.exports = require('lib/root-component')({
       </div>
     );
   }
+}, {
+  moduleNamePrefix: 'locales/'
 });
