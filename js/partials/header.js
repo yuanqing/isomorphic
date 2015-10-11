@@ -1,7 +1,3 @@
-// var React = require('react');
-
-// console.log(require('../../lib/components/component'));
-
 module.exports = require('../../lib/components/component')({
   render: function() {
     return (

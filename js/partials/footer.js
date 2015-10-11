@@ -1,6 +1,4 @@
-var React = require('react');
-
-module.exports = React.createClass({
+module.exports = require('../../lib/components/component')({
   render: function() {
     return (
       <div className="Footer">
