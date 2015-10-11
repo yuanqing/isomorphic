@@ -8,6 +8,7 @@ var nopt = require('nopt');
 var path = require('path');
 var sass = require('gulp-sass');
 var karma = require('karma');
+var savoy = require('savoy');
 var gutil = require('gulp-util');
 var shell = require('gulp-shell');
 var envify = require('envify');
@@ -40,6 +41,10 @@ var KARMA_CONF_FILE = __dirname + '/karma.conf.js';
 
 // Directory to write our compiled JS and CSS.
 var DIST_DIR = 'dist';
+
+// Path to locales files.
+var LOCALES_DIR = './locales';
+var LOCALES_DIST_DIR = DIST_DIR + '/locales';
 
 // Path to JS files.
 var JS_ALL_DIRS = [
@@ -200,10 +205,27 @@ gulp.task('build', ['build:js', 'build:css']);
 // Build the vendor JS and our app JS.
 gulp.task('build:js', function(callback) {
   runSequence([
+    'build:locales',
     'build:js:vendor',
-    'build:js:locales',
     'build:js:app'
   ], 'build:js:minify', callback);
+});
+
+// Browserify the locale files.
+gulp.task('build:locales', function(callback) {
+  var localeFiles = glob.sync(LOCALES_DIR + '/*.json');
+  savoy.each(localeFiles, function(callback, file) {
+    var basename = path.basename(file, '.json');
+    browserify()
+      .require(file, {
+        expose: 'locales/' + basename
+      })
+      .bundle()
+      .on('end', callback)
+      .pipe(source(basename + '.js'))
+      .pipe(buffer())
+      .pipe(gulp.dest(LOCALES_DIST_DIR));
+  }, callback);
 });
 
 // Build some dependencies separately to speed up `browserify`.
@@ -216,15 +238,6 @@ gulp.task('build:js:vendor', function() {
     .pipe(source(JS_DIST_VENDOR_FILENAME))
     .pipe(buffer())
     .pipe(gulp.dest(JS_DIST_DIR));
-});
-
-gulp.task('build:js:locales', function() {
-  return browserify()
-    .require('./locales/en-sg.js', { expose: 'locales/en-sg' })
-    .bundle()
-    .pipe(source('en-sg.js'))
-    .pipe(buffer())
-    .pipe(gulp.dest('dist/locales/'));
 });
 
 // Build our app JS.

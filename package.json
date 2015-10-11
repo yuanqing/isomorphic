@@ -76,7 +76,7 @@
   "scripts": {
     "start": "gulp",
     "test": "gulp test",
-    "postinstall": "mkdir -p node_modules && cd node_modules && ln -s -f ../lib lib && ln -s -f ../js js"
+    "postinstall": "mkdir -p node_modules && cd node_modules && ln -s -f ../locales locales && ln -s -f ../lib lib && ln -s -f ../js js"
   },
   "private": true
 }
