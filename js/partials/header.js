@@ -1,3 +1,5 @@
+var React = require('react');
+
 module.exports = require('../../lib/components/component')({
   render: function() {
     return (

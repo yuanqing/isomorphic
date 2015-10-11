@@ -1,7 +1,7 @@
 require('babel/register');
 var fs = require('fs');
 var path = require('path');
-var React = global.React = require('react');
+var React = require('react');
 var express = require('express');
 var Negotiator = require('negotiator');
 var compression = require('compression');

@@ -208,7 +208,9 @@ gulp.task('build:js', function(callback) {
 
 // Build some dependencies separately to speed up `browserify`.
 gulp.task('build:js:vendor', function() {
-  return browserify()
+  return browserify({
+      debug: false
+    })
     .require(JS_VENDOR_MODULES)
     .bundle()
     .pipe(source(JS_DIST_VENDOR_FILENAME))
@@ -243,7 +245,7 @@ gulp.task('build:js:app', function() {
   outputFiles = outputFiles.concat(JS_DIST_CLIENT_FILE);
   return browserify({
     // Add sourcemaps inline.
-    debug: !IS_PRODUCTION,
+    // debug: !IS_PRODUCTION,
     entries: inputFiles,
     transform: [
       reactify, // Compile JSX.
