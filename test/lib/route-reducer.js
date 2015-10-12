@@ -6,6 +6,11 @@ var RouteActionCreator = require('../../lib/action-creators/route-action-creator
 
 var routeActionCreator = new RouteActionCreator({});
 
+test('invalid action', function(t) {
+  t.plan(1);
+  t.looseEqual(routeReducer({ type: 'foo' }, { bar: 'baz' }, assign), { bar: 'baz' });
+});
+
 test('route to a given `url`', function(t) {
   t.plan(1);
   t.looseEqual(routeReducer(routeActionCreator.route('/foo'), {}, assign), {});
