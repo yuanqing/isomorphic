@@ -63,7 +63,9 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
-var routeActionCreator = new RouteActionCreator(routes);
+var routeActionCreator = new RouteActionCreator(routes, {
+  i18n: require('js/i18n')
+});
 
 // Intercept all `get` requests.
 app.get('*', function(request, response) {
@@ -73,6 +75,7 @@ app.get('*', function(request, response) {
   var negotiator = new Negotiator(request);
   var language = negotiator.language(supportedLanguages);
   var locale = language + '-sg';
+  // TODO: Hard-code the locale for now.
   locale = 'en-sg';
   // Set the `locale` before we populate our `store`.
   store.dispatch(LocaleActionCreator.setLocale(locale));

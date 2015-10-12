@@ -1,3 +1,5 @@
 module.exports = function() {
-  this.render('home');
+  this.render('home', {
+    title: this.t('home')
+  });
 };

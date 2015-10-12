@@ -1,7 +1,6 @@
 var test = require('tape');
 
 var Store = require('../../lib/store');
-var promise = require('../../lib/promise');
 var RouteActionTypes = require('../../lib/action-types/route-action-types');
 var RouteActionCreator = require('../../lib/action-creators/route-action-creator');
 
@@ -24,6 +23,11 @@ var routes = {
 var componentLoader = function(viewName, callback) {
   callback();
 };
+var i18n = function() {
+  return function(key) {
+    return key;
+  };
+};
 
 test('`route` returns a function', function(t) {
   t.plan(1);
@@ -44,7 +48,8 @@ test('route where `render` is called', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    componentLoader: componentLoader
+    componentLoader: componentLoader,
+    i18n: i18n
   });
   var routeAction = routeActionCreator.route('foo', {
     store: store
@@ -69,7 +74,7 @@ test('route where `render` is called', function(t) {
           url: 'foo',
           viewName: 'foo'
         }
-      },
+      }
     ]);
   });
 });
@@ -86,7 +91,8 @@ test('route where `render` is called, with `isPopState` set to `true`', function
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    componentLoader: componentLoader
+    componentLoader: componentLoader,
+    i18n: i18n
   });
   var routeAction = routeActionCreator.route('foo', {
     store: store,
@@ -112,7 +118,7 @@ test('route where `render` is called, with `isPopState` set to `true`', function
           url: 'foo',
           viewName: 'foo'
         }
-      },
+      }
     ]);
   });
 });
@@ -129,7 +135,8 @@ test('route where `route` is called', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    componentLoader: componentLoader
+    componentLoader: componentLoader,
+    i18n: i18n
   });
   var routeAction = routeActionCreator.route('bar', {
     store: store
@@ -157,7 +164,7 @@ test('route where `route` is called', function(t) {
           payload: {
             redirectUrl: 'foo'
           }
-        },
+        }
       ]);
     }
   });
@@ -175,7 +182,8 @@ test('route where `error` is called', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    componentLoader: componentLoader
+    componentLoader: componentLoader,
+    i18n: i18n
   });
   var routeAction = routeActionCreator.route('404', {
     store: store
@@ -194,7 +202,7 @@ test('route where `error` is called', function(t) {
           url: '404',
           viewName: '404'
         }
-      },
+      }
     ]);
   });
 });
@@ -211,7 +219,8 @@ test('non-existent route', function(t) {
   };
   var routeActionCreator = new RouteActionCreator(routes, {
     store: store,
-    componentLoader: componentLoader
+    componentLoader: componentLoader,
+    i18n: i18n
   });
   var routeAction = routeActionCreator.route('fail', {
     store: store
@@ -230,7 +239,7 @@ test('non-existent route', function(t) {
           url: 'fail',
           viewName: '404'
         }
-      },
+      }
     ]);
   });
 });

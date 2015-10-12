@@ -1,7 +1,8 @@
 var Header = require('./partials/header');
 var Footer = require('./partials/footer');
+var i18n = require('./i18n');
 
-module.exports = require('lib/root-component')({
+module.exports = require('lib/root-component')(i18n, {
   mixins: process.browser ? [require('./store').mixin] : [],
   getInitialState: function() {
     return this.props.state || {};
@@ -16,6 +17,4 @@ module.exports = require('lib/root-component')({
       </div>
     );
   }
-}, {
-  moduleNamePrefix: 'locales/'
 });
