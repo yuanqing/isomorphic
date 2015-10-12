@@ -13,13 +13,13 @@ var lodashTemplate = require('lodash.template');
 var ReactDOMServer = require('react-dom/server');
 
 var Store = require('lib/store');
-var RouteActionCreator = require('lib/route-action-creator');
+var RouteActionCreator = require('lib/action-creators/route-action-creator');
+var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
 var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
 var RootComponent = require('./root-component');
-var localeActionCreator = require('./action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
@@ -75,7 +75,7 @@ app.get('*', function(request, response) {
   var locale = language + '-sg';
   locale = 'en-sg';
   // Set the `locale` before we populate our `store`.
-  store.dispatch(localeActionCreator.setLocale(locale));
+  store.dispatch(LocaleActionCreator.setLocale(locale));
   // Pass in the empty `store` to the `route` method.
   store.dispatch(routeActionCreator.route(request.url, { store: store })).then(function() {
     var state = store.getState();
