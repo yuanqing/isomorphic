@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/yuanqing/isomorphic.svg?branch=master&style=flat)](https://travis-ci.org/yuanqing/isomorphic) [![Coverage Status](https://img.shields.io/coveralls/yuanqing/isomorphic.svg?branch=master&style=flat)](https://coveralls.io/r/yuanqing/isomorphic)
+[![Build Status](https://img.shields.io/travis/yuanqing/isomorphic.svg?branch=master&style=flat)](https://travis-ci.org/yuanqing/isomorphic) [![Coverage Status](https://img.shields.io/coveralls/yuanqing/isomorphic.svg?branch=master&style=flat)](https://coveralls.io/r/yuanqing/isomorphic) ![Stability Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)
 
 ## Ideas
 
@@ -68,6 +68,7 @@ Directory | Description
 ## Todo
 
 - Allow views to set their own title and `meta`
+- Documentation + explain design decisions
 - Move to [watchify](https://github.com/substack/watchify)
 - [Stop using mixins](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750)
 - [Firebase](lib/firebase.js): patching/updates, tests
