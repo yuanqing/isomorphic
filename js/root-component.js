@@ -3,16 +3,12 @@ var Footer = require('./partials/footer');
 var i18n = require('./i18n');
 
 module.exports = require('lib/root-component')(i18n, {
-  mixins: process.browser ? [require('./store').mixin] : [],
-  getInitialState: function() {
-    return this.props.store.getState() || {};
-  },
   render: function() {
-    var View = require('js/views/' + this.state.route.viewName);
+    var View = require('js/views/' + this.props.route.viewName);
     return (
       <div>
         <Header />
-        <View {...this.state} />
+        <View {... this.props} />
         <Footer />
       </div>
     );
