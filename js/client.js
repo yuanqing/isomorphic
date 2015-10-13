@@ -9,7 +9,7 @@ var RootComponent = require('./root-component');
 var routeActionCreator = require('./action-creators/route-action-creator');
 var storeActionCreator = require('./action-creators/store-action-creator');
 
-ReactDom.render(<RootComponent state={store.getState()} />,
+ReactDom.render(<RootComponent store={store} />,
   document.querySelector('.app'));
 
 linkClickInterceptor(function(url, opts) {

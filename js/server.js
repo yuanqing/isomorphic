@@ -93,8 +93,7 @@ app.get('*', function(request, response) {
       }
     }
     var reactElement = React.createElement(RootComponent, {
-      store: store,
-      state: state
+      store: store
     });
     // Serialise the `state`, and interpolate it into our template.
     response.end(tmpl({
