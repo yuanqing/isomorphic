@@ -1,3 +1,3 @@
 module.exports = function() {
-  this.render('faq');
+  this.render('faq', 'faq');
 };

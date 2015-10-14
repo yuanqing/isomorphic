@@ -101,7 +101,9 @@ app.get('*', function(request, response) {
       app: ReactDOMServer.renderToString(reactElement),
       state: JSON.stringify(state),
       viewName: state.route.viewName,
-      locale: state.locale
+      locale: state.locale,
+      title: state.route.title,
+      meta: []
     }));
   });
 });

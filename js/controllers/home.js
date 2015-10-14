@@ -1,5 +1,8 @@
 module.exports = function() {
-  this.render('home', {
-    title: this.t('home')
-  });
+  this.render('home', this.t('home'), [
+    {
+      property: 'og:description',
+      content: 'Home'
+    }
+  ]);
 };
