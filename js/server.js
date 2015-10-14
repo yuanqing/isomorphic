@@ -16,7 +16,7 @@ var Store = require('lib/store');
 var RouteActionCreator = require('lib/action-creators/route-action-creator');
 var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
-var t = require('./t');
+var translate = require('./translate');
 var config = require('../config');
 var routes = require('./routes');
 var reducers = require('./reducers');
@@ -65,7 +65,7 @@ app.use(expressSession({
 }));
 
 var routeActionCreator = new RouteActionCreator(routes, {
-  t: t
+  t: translate
 });
 
 // Intercept all `get` requests.
