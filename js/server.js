@@ -22,6 +22,8 @@ var routes = require('./routes');
 var reducers = require('./reducers');
 var RootComponent = require('./root-component');
 
+var map = require('savoy').map;
+
 var ROOT_DIR = path.resolve(__dirname, '..');
 
 // Read the template.
@@ -96,14 +98,16 @@ app.get('*', function(request, response) {
     var reactElement = React.createElement(RootComponent, {
       store: store
     });
-    // Serialise the `state`, and interpolate it into our template.
+    var meta = map(state.route.meta, function(metaData) {
+      return ReactDOMServer.renderToString(React.createElement('meta', metaData));
+    });
     response.end(tmpl({
       app: ReactDOMServer.renderToString(reactElement),
       state: JSON.stringify(state),
       viewName: state.route.viewName,
       locale: state.locale,
       title: state.route.title,
-      meta: []
+      meta: meta
     }));
   });
 });
