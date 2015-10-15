@@ -2,6 +2,7 @@ require('babel/register');
 
 var fs = require('fs');
 var path = require('path');
+var savoy = require('savoy');
 var React = global.React = require('react');
 var express = require('express');
 var Negotiator = require('negotiator');
@@ -13,44 +14,28 @@ var lodashTemplate = require('lodash.template');
 var ReactDOMServer = require('react-dom/server');
 
 var Store = require('lib/store');
-var RouteActionCreator = require('lib/action-creators/route-action-creator');
-var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
+var compileMeta = require('./update-head').compileMeta;
 
-var translate = require('./translate');
 var config = require('../config');
-var routes = require('./routes');
 var reducers = require('./reducers');
 var RootComponent = require('./root-component');
-
-var map = require('savoy').map;
+var RouteActionCreator = require('./action-creators/route-action-creator');
+var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
-// Read the template.
 var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/index.html', 'utf8'));
-
-// i18n.
 var supportedLanguages = ['en'];
 
-// Initialise.
 var app = express();
-
-// Remove the `x-powered-by` header.
 app.disable('x-powered-by');
-
-// Gzip.
 app.use(compression());
-
-// Serve favicon.
 app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
-
-// Serve the `/assets`, `/css` and `/js` directories.
 app.use('/assets', express.static(ROOT_DIR + '/assets'));
-app.use('/css', express.static(ROOT_DIR + '/dist/css'));
-app.use('/js', express.static(ROOT_DIR + '/dist/js'));
-app.use('/locales', express.static(ROOT_DIR + '/dist/locales'));
+savoy.each(['css', 'js', 'locales'], function(dir) {
+  app.use('/' + dir, express.static(ROOT_DIR + '/dist/' + dir));
+});
 
-// Set up sessions.
 var RedisStore = connectRedis(expressSession);
 app.use(expressSession({
   name: 'sessionID',
@@ -66,11 +51,6 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
-var routeActionCreator = new RouteActionCreator(routes, {
-  t: translate
-});
-
-// Intercept all `get` requests.
 app.get('*', function(request, response) {
   // Initialise a new Store for every new request.
   var store = new Store(reducers);
@@ -78,12 +58,11 @@ app.get('*', function(request, response) {
   var negotiator = new Negotiator(request);
   var language = negotiator.language(supportedLanguages);
   var locale = language + '-sg';
-  // TODO: Hard-code the locale for now.
-  locale = 'en-sg';
-  // Set the `locale` before we populate our `store`.
+  locale = 'en-sg'; // FIXME: Hard-code the locale for now.
+  // Set the `locale` before we populate the `store`.
   store.dispatch(LocaleActionCreator.setLocale(locale));
-  // Pass in the empty `store` to the `route` method.
-  store.dispatch(routeActionCreator.route(request.url, { store: store })).then(function() {
+  // Pass in the `store` to the `route` method.
+  store.dispatch(RouteActionCreator.route(request.url, { store: store })).then(function() {
     var state = store.getState();
     // Check if there was an error or if we need to redirect.
     if (state.route.error) {
@@ -95,22 +74,20 @@ app.get('*', function(request, response) {
         return response.redirect(redirectUrl);
       }
     }
+    var meta = compileMeta(state.route.meta);
+    delete state.route.meta;
     var reactElement = React.createElement(RootComponent, {
       store: store
     });
-    var meta = map(state.route.meta, function(metaData) {
-      return ReactDOMServer.renderToString(React.createElement('meta', metaData));
-    });
     response.end(tmpl({
-      app: ReactDOMServer.renderToString(reactElement),
-      state: JSON.stringify(state),
-      viewName: state.route.viewName,
-      locale: state.locale,
       title: state.route.title,
-      meta: meta
+      meta: meta,
+      state: JSON.stringify(state),
+      locale: state.locale,
+      viewName: state.route.viewName,
+      app: ReactDOMServer.renderToString(reactElement)
     }));
   });
 });
 
-// Run the app.
 app.listen(config.expressPort);
