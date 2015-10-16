@@ -21,6 +21,7 @@ var source = require('vinyl-source-stream');
 var bulkify = require('bulkify');
 var through = require('through2');
 var nodemon = require('gulp-nodemon');
+var htmlmin = require('gulp-htmlmin');
 var babelify = require('babelify');
 var minifyCss = require('gulp-minify-css');
 var browserify = require('browserify');
@@ -78,6 +79,10 @@ var CSS_MAIN_FILE = './css/index.scss';
 var CSS_ALL_FILES = './css/**/*.scss';
 var CSS_DIST_DIR = DIST_DIR + '/css';
 var CSS_DIST_FILENAME = 'style.css';
+
+// Path to HTML files.
+var HTML_FILE = './index.html';
+var HTML_DIST_DIR = DIST_DIR;
 
 // The URL we're serving our app at.
 var APP_URL = 'http://localhost:' + config.expressPort;
@@ -207,7 +212,7 @@ gulp.task('coverage:client', ['test:client'], function(callback) {
 });
 
 // Build JS and CSS.
-gulp.task('build', ['build:locales', 'build:js', 'build:css']);
+gulp.task('build', ['build:locales', 'build:js', 'build:css', 'build:html']);
 
 // Browserify the locale files.
 gulp.task('build:locales', function(callback) {
@@ -322,6 +327,13 @@ gulp.task('build:css', function() {
       keepSpecialComments: 0
     })))
     .pipe(gulp.dest(CSS_DIST_DIR));
+});
+
+// Build our HTML.
+gulp.task('build:html', function() {
+  return gulp.src(HTML_FILE)
+    .pipe(htmlmin({ collapseWhitespace: true }))
+    .pipe(gulp.dest(HTML_DIST_DIR));
 });
 
 // Rebuild our JS and restart the app on every file change.

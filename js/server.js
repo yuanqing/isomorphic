@@ -24,7 +24,7 @@ var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
-var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/index.html', 'utf8'));
+var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/dist/index.html', 'utf8'));
 var supportedLanguages = ['en'];
 
 var app = express();
