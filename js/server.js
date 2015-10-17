@@ -24,6 +24,7 @@ var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
 
+var manifest = require(ROOT_DIR + '/dist/view-manifest');
 var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/dist/index.html', 'utf8'));
 var supportedLanguages = ['en'];
 
@@ -31,7 +32,6 @@ var app = express();
 app.disable('x-powered-by');
 app.use(compression());
 app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
-app.use('/assets', express.static(ROOT_DIR + '/assets'));
 savoy.each(['css', 'js', 'locales'], function(dir) {
   app.use('/' + dir, express.static(ROOT_DIR + '/dist/' + dir));
 });
@@ -82,6 +82,7 @@ app.get('*', function(request, response) {
     response.end(tmpl({
       title: state.route.title,
       meta: meta,
+      manifest: JSON.stringify(manifest),
       state: JSON.stringify(state),
       locale: state.locale,
       viewName: state.route.viewName,

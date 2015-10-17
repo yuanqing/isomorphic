@@ -3,10 +3,11 @@ var bpb = require('bpb');
 var del = require('del');
 var opn = require('opn');
 var rev = require('gulp-rev');
-var glob = require('glob');
+var globby = require('globby');
 var gulp = require('gulp');
 var nopt = require('nopt');
 var path = require('path');
+var concatStream = require('concat-stream');
 var sass = require('gulp-sass');
 var karma = require('karma');
 var savoy = require('savoy');
@@ -28,8 +29,8 @@ var minifyCss = require('gulp-minify-css');
 var browserify = require('browserify');
 var sourcemaps = require('gulp-sourcemaps');
 var runSequence = require('run-sequence');
-var factorBundle = require('factor-bundle');
 var autoprefixer = require('gulp-autoprefixer');
+var factorVinylify = require('factor-vinylify');
 var istanbulCombine = require('istanbul-combine');
 
 var config = require('./config');
@@ -45,10 +46,6 @@ var KARMA_CONF_FILE = __dirname + '/karma.conf.js';
 // Directory to write our compiled JS and CSS.
 var DIST_DIR = './dist';
 
-// Path to locales files.
-var LOCALES_DIR = './locales';
-var LOCALES_DIST_DIR = DIST_DIR + '/locales';
-
 // Path to JS files.
 var JS_ALL_DIRS = [
   './lib',
@@ -58,15 +55,11 @@ var JS_ALL_FILES = [
   './lib/**/*.js',
   './js/**/*.js'
 ];
+var JS_DIR = './js';
 var JS_SERVER_FILE = './js/server.js';
-var JS_CLIENT_FILE = './js/client.js';
-var JS_VIEWS_DIR = './js/views';
 var JS_VENDOR_MODULES = ['react', 'react-dom', 'firebase'];
 var JS_DIST_DIR = DIST_DIR + '/js/';
-var JS_DIST_COMMON_FILENAME = 'common.js';
 var JS_DIST_VENDOR_FILENAME = 'vendor.js';
-var JS_DIST_CLIENT_FILE = DIST_DIR + '/' + JS_CLIENT_FILE;
-var JS_DIST_VIEWS_DIR = DIST_DIR + '/' + JS_VIEWS_DIR;
 
 // Directory to write coverage reports.
 var COVERAGE_DIR = './coverage';
@@ -78,16 +71,21 @@ var COVERAGE_JSON_FILES = COVERAGE_DIR + '/*/' + COVERAGE_FILENAME;
 // Path to CSS files.
 var CSS_MAIN_FILE = './css/index.scss';
 var CSS_ALL_FILES = './css/**/*.scss';
-var CSS_DIST_DIR = DIST_DIR + '/css';
-var CSS_DIST_FILENAME = 'style.css';
+// var CSS_DIST_DIR = DIST_DIR + '/css';
+var CSS_DIST_FILE = 'css/style.css';
 
 // Path to HTML files.
 var HTML_FILE = './index.html';
 var HTML_DIST_DIR = DIST_DIR;
 
+var LOCALES_DIR = './locales';
+
+var INTERPOLATE_REGEX = /{{\s*([^}]+?)\s*}}/g;
+
 // Path to asset versioned files.
 var REV_DIR = './rev-dist';
-var REV_MANIFEST_FILENAME = 'manifest.json';
+var MANIFEST_FILE = DIST_DIR + '/manifest.json';
+var JS_VIEW_HASH_FILE = DIST_DIR + '/view-hash.json';
 
 // The URL we're serving our app at.
 var APP_URL = 'http://localhost:' + config.expressPort;
@@ -228,61 +226,63 @@ gulp.task('coverage:client', ['test:client'], function(callback) {
 });
 
 // Build JS and CSS.
-gulp.task('build', ['build:locales', 'build:js', 'build:css', 'build:html']);
+gulp.task('build', function(callback) {
+  runSequence('build:locales', 'build:js', 'build:css', 'build:html', callback);
+});
 
 // Browserify the locale files.
 gulp.task('build:locales', function(callback) {
-  var localeFiles = glob.sync(LOCALES_DIR + '/*.json');
-  savoy.each(localeFiles, function(callback, file) {
+  var localeFiles = globby.sync(LOCALES_DIR + '/*.json');
+  savoy.eachSeries(localeFiles, function(callback, file) {
     var basename = path.basename(file, '.json');
+    var moduleName = LOCALES_DIR + '/' + basename;
     browserify()
       .require(file, {
-        expose: 'locales/' + basename
+        expose: moduleName
       })
       .bundle()
       .on('end', callback)
-      .pipe(source(basename + '.js'))
+      .pipe(source(moduleName + '.js'))
       .pipe(buffer())
-      .pipe(gulp.dest(LOCALES_DIST_DIR));
+      .pipe(gulpIf(IS_PRODUCTION, uglify()))
+      .pipe(rev())
+      .pipe(gulp.dest(DIST_DIR))
+      .pipe(rev.manifest(MANIFEST_FILE, {
+        base: DIST_DIR,
+        merge: true
+      }))
+      .pipe(gulp.dest(DIST_DIR));
   }, callback);
 });
 
-// Build the vendor JS and our app JS. Only minify when building
-// for production.
 gulp.task('build:js', function(callback) {
-  var tasks = ['build:js:vendor', 'build:js:app'];
-  runSequence(IS_PRODUCTION ? tasks.concat('build:js:minify') : tasks, callback);
+  runSequence('build:js:vendor', 'build:js:app', callback);
 });
 
-// Build the vendor JS.
 gulp.task('build:js:vendor', function() {
   return browserify()
     .transform(envify)
     .require(JS_VENDOR_MODULES)
     .bundle()
-    .pipe(source(JS_DIST_VENDOR_FILENAME))
+    .pipe(source('js/vendor.js'))
     .pipe(buffer())
-    .pipe(gulp.dest(JS_DIST_DIR));
+    .pipe(gulpIf(IS_PRODUCTION, uglify()))
+    .pipe(rev())
+    .pipe(gulp.dest(DIST_DIR))
+    .pipe(rev.manifest(MANIFEST_FILE, {
+      base: DIST_DIR,
+      merge: true
+    }))
+    .pipe(gulp.dest(DIST_DIR));
 });
 
-// Build our app JS.
 gulp.task('build:js:app', function() {
-  // Make sure the `JS_DIST_VIEWS_DIR` directory exists. The `factor-bundle`
-  // plugin will error otherwise.
-  fs.ensureDirSync(JS_DIST_VIEWS_DIR);
-  // Each file in `JS_VIEWS_DIR` is bundled separately. Each entry file in the
-  // `inputFiles` array is output to the corresponding path in the
-  // `outputFiles` array.
-  var inputFiles = glob.sync(JS_VIEWS_DIR + '/*.js');
-  var outputFiles = inputFiles.map(function(file) {
-    return JS_DIST_VIEWS_DIR + '/' + path.basename(file);
-  });
-  // The `JS_CLIENT_FILE` is also an entry point. Append to the `inputFiles`
-  // and `outputFiles` arrays accordingly.
-  inputFiles = inputFiles.concat(JS_CLIENT_FILE);
-  outputFiles = outputFiles.concat(JS_DIST_CLIENT_FILE);
-  return browserify(inputFiles, {
-    debug: !IS_PRODUCTION
+  var entries = globby.sync([JS_DIR + '/views/*.js', JS_DIR + '/client.js']);
+  // var viewManifest = {};
+  return browserify({
+    entries: entries,
+    basedir: '.',
+    debug: !IS_PRODUCTION,
   }).external(JS_VENDOR_MODULES)
     // Compile JSX.
     .transform(babelify)
@@ -290,75 +290,77 @@ gulp.task('build:js:app', function() {
     .transform(bulkify)
     // Replace `process.browser` with `true`.
     .transform(bpb)
-    // Replace `process.env.NODE_ENV` with the string.
+    // Replace `process.env.NODE_ENV` with the corresponding string.
     .transform(envify)
-    .on('factor.pipeline', function (file, pipeline) {
+    .on('factor.pipeline', function(file, pipeline) {
       pipeline.get('pack').unshift(through.obj(function(row, encoding, callback) {
         // Assign an `id` so that we can get a reference to each `view` module
-        // eg. via `require('views/home')` when we load each view
-        // bundle on demand.
+        // eg. via `require('js/views/home')` when we load the view bundle
+        // on demand.
         if (row.entry) {
-          row.id = 'js/views/' + path.basename(row.file, '.js');
+          row.id = JS_DIR + '/views/' + path.basename(row.file, '.js');
         }
         callback(null, row);
       }));
     })
-    // Code that is specific to each file in the `entryFiles` array will be
-    // bundled separately ie. written to the corresponding file in the
-    // `outputFiles` array.
-    .plugin(factorBundle, { output: outputFiles })
+    .plugin(factorVinylify, {
+      outputs: entries,
+      common: JS_DIR + '/common.js'
+    })
     .bundle()
-    // Code common to every file in the `entryFiles` array will be written
-    // to the file named `JS_DIST_COMMON_FILENAME`.
-    .pipe(source(JS_DIST_COMMON_FILENAME))
-    .pipe(buffer())
-    .pipe(gulp.dest(JS_DIST_DIR));
-});
-
-// Minify our JS.
-gulp.task('build:js:minify', function() {
-  return gulp.src(JS_DIST_DIR + '/**/*.js')
-    .pipe(uglify())
-    .pipe(gulp.dest(function(data) {
-      // Override the original files.
-      return data.base;
-    }));
+    .pipe(gulpIf(IS_PRODUCTION, uglify()))
+    .pipe(rev())
+    .pipe(gulp.dest(DIST_DIR))
+    .pipe(rev.manifest(MANIFEST_FILE, {
+      base: DIST_DIR,
+      merge: true
+    }))
+    .pipe(gulp.dest(DIST_DIR));
 });
 
 // Build our CSS. Only minify when building for production.
 gulp.task('build:css', function() {
   return gulp.src(CSS_MAIN_FILE)
-    .pipe(sourcemaps.init({
+    .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.init({
       loadMaps: true
-    }))
+    })))
     .pipe(sass())
-    .pipe(concat(CSS_DIST_FILENAME))
+    .pipe(concat(CSS_DIST_FILE))
     .pipe(autoprefixer({
       browsers: ['last 2 versions'],
       cascade: false
     }))
-    .pipe(sourcemaps.write('.'))
     .pipe(gulpIf(IS_PRODUCTION, minifyCss({
       // Remove all comments, no exceptions.
       keepSpecialComments: 0
     })))
-    .pipe(gulp.dest(CSS_DIST_DIR));
+    .pipe(rev())
+    .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.write('.')))
+    .pipe(gulp.dest(DIST_DIR))
+    .pipe(rev.manifest(MANIFEST_FILE, {
+      base: DIST_DIR,
+      merge: true
+    }))
+    .pipe(gulp.dest(DIST_DIR));
 });
 
 // Build our HTML.
+var replace = require('gulp-replace');
 gulp.task('build:html', function() {
+  var manifest = require('./dist/manifest.json');
+  // var viewsRevHashes = require('./dist/view-manifest.json');
+  var prefix = '/';
   return gulp.src(HTML_FILE)
-    .pipe(htmlmin({ collapseWhitespace: true }))
+    // .pipe(replace(/{{\s*manifest\s*}}/g, JSON.stringify(viewsRevHashes)))
+    .pipe(replace(INTERPOLATE_REGEX, function(match, originalPath) {
+      var revvedPath = manifest[originalPath];
+      if (!revvedPath) {
+        throw new Error('Asset not found: ' + originalPath);
+      }
+      return prefix + revvedPath;
+    }))
+    .pipe(gulpIf(IS_PRODUCTION, htmlmin({ collapseWhitespace: true })))
     .pipe(gulp.dest(HTML_DIST_DIR));
-});
-
-// Asset versioning.
-gulp.task('rev', ['clean:rev'], function() {
-  return gulp.src(DIST_DIR + '/**/*', { base: DIST_DIR })
-    .pipe(rev())
-    .pipe(gulp.dest(REV_DIR))
-    .pipe(rev.manifest(REV_MANIFEST_FILENAME))
-    .pipe(gulp.dest(REV_DIR));
 });
 
 // Rebuild our JS and restart the app on every file change.
