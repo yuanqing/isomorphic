@@ -115,12 +115,23 @@ gulp.task('clean', ['clean:dist', 'clean:coverage']);
 
 // Delete the `dist` directory.
 gulp.task('clean:dist', function(callback) {
-  del(DIST_DIR, callback);
+  del(DIST_DIR).then(function() {
+    callback();
+  });
+});
+
+// Delete the `rev` directory.
+gulp.task('clean:rev', function(callback) {
+  del(REV_DIR).then(function() {
+    callback();
+  });
 });
 
 // Delete the `coverage` directory.
 gulp.task('clean:coverage', function(callback) {
-  del(COVERAGE_DIR, callback);
+  del(COVERAGE_DIR).then(function() {
+    callback();
+  });
 });
 
 // Lint JS.
@@ -342,7 +353,7 @@ gulp.task('build:html', function() {
 });
 
 // Asset versioning.
-gulp.task('rev', function() {
+gulp.task('rev', ['clean:rev'], function() {
   return gulp.src(DIST_DIR + '/**/*', { base: DIST_DIR })
     .pipe(rev())
     .pipe(gulp.dest(REV_DIR))
