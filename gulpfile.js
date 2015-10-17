@@ -2,6 +2,7 @@ var fs = require('fs-extra');
 var bpb = require('bpb');
 var del = require('del');
 var opn = require('opn');
+var rev = require('gulp-rev');
 var glob = require('glob');
 var gulp = require('gulp');
 var nopt = require('nopt');
@@ -83,6 +84,10 @@ var CSS_DIST_FILENAME = 'style.css';
 // Path to HTML files.
 var HTML_FILE = './index.html';
 var HTML_DIST_DIR = DIST_DIR;
+
+// Path to asset versioned files.
+var REV_DIR = './rev-dist';
+var REV_MANIFEST_FILENAME = 'manifest.json';
 
 // The URL we're serving our app at.
 var APP_URL = 'http://localhost:' + config.expressPort;
@@ -334,6 +339,15 @@ gulp.task('build:html', function() {
   return gulp.src(HTML_FILE)
     .pipe(htmlmin({ collapseWhitespace: true }))
     .pipe(gulp.dest(HTML_DIST_DIR));
+});
+
+// Asset versioning.
+gulp.task('rev', function() {
+  return gulp.src(DIST_DIR + '/**/*', { base: DIST_DIR })
+    .pipe(rev())
+    .pipe(gulp.dest(REV_DIR))
+    .pipe(rev.manifest(REV_MANIFEST_FILENAME))
+    .pipe(gulp.dest(REV_DIR));
 });
 
 // Rebuild our JS and restart the app on every file change.
