@@ -9,7 +9,7 @@
 <body>
   <div class="app"><%= app %></div>
   <script>window.__STATE__=<%= state %>;</script>
-  <script src="/locales/<%= locale %>.js"></script>
+  <script src="<%= locale %>"></script>
   <script src="{{ js/vendor.js }}"></script>
   <script src="{{ js/common.js }}"></script>
   <script src="/js/views/<%= viewName %>.js"></script>

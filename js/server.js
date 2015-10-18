@@ -36,6 +36,15 @@ savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
   app.use('/' + dir, express.static(BUILD_DIR + '/' + dir));
 });
 
+var manifest = require(BUILD_DIR + '/manifest.json');
+var locales = savoy.fold(manifest, {}, function(acc, revvedPath, originalPath) {
+  if (originalPath.indexOf('locales/') === 0) {
+    var locale = path.basename(originalPath, '.js');
+    acc[locale] = '/' + revvedPath;
+  }
+  return acc;
+});
+
 var RedisStore = connectRedis(expressSession);
 app.use(expressSession({
   name: 'sessionID',
@@ -83,7 +92,7 @@ app.get('*', function(request, response) {
       title: state.route.title,
       meta: meta,
       state: JSON.stringify(state),
-      locale: state.locale,
+      locale: locales[state.locale],
       viewName: state.route.viewName,
       app: ReactDOMServer.renderToString(reactElement)
     }));

@@ -22,10 +22,10 @@ var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var bulkify = require('bulkify');
+var nodemon = require('nodemon');
 var through = require('through2');
 var htmlmin = require('gulp-htmlmin');
 var replace = require('gulp-replace');
-var forever = require('forever-monitor');
 var babelify = require('babelify');
 var watchify = require('watchify');
 var imagemin = require('gulp-imagemin');
@@ -296,30 +296,28 @@ var browserifyApp = function(options, callback) {
 
 var serve = function(options) {
   options = options || {};
-  var script = 'js/server.js';
-  options.silent = false;
+  var serverScript = 'js/server.js';
+  options.script = serverScript;
   if (options.watch) {
-    options.watch = true;
-    options.watchDirectory = script;
+    options.watch = [serverScript, 'build/index.html'];
   }
   return function(callback) {
     var isInitial = true;
-    var f = new forever.Monitor(script, options);
-    f.on('start', function() {
-      if (isInitial) {
-        gutil.log(gutil.colors.white('Started'), gutil.colors.red(script));
-        isInitial = false;
-        if (ARGS.open) {
-          setTimeout(function() {
-            openInBrowser(APP_URL, callback);
-          }, 1000);
+    nodemon(options)
+      .on('start', function() {
+        if (isInitial) {
+          gutil.log(gutil.colors.white('Started'), gutil.colors.red(serverScript));
+          isInitial = false;
+          if (ARGS.open) {
+            setTimeout(function() {
+              openInBrowser(APP_URL, callback);
+            }, 1000);
+          }
         }
-      }
-    });
-    f.on('restart', function() {
-      gutil.log(gutil.colors.white('Restarted'), gutil.colors.red(script));
-    });
-    f.start();
+      })
+      .on('restart', function() {
+        gutil.log(gutil.colors.white('Restarted'), gutil.colors.red(serverScript));
+      });
   };
 };
 

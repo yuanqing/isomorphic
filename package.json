@@ -90,7 +90,7 @@
   "scripts": {
     "start": "gulp",
     "test": "gulp test",
-    "symlink": "mkdir -p node_modules && ln -s -f locales node_modules/locales && ln -s -f lib node_modules/lib && ln -s -f js node_modules/js",
+    "symlink": "mkdir -p node_modules && cd node_modules && ln -s -f ../locales locales && ln -s -f ../lib lib && ln -s -f ../js js",
     "postinstall": "npm run symlink"
   },
   "private": true
