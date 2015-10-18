@@ -23,17 +23,17 @@ var RouteActionCreator = require('./action-creators/route-action-creator');
 var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
 var ROOT_DIR = path.resolve(__dirname, '..');
+var BUILD_DIR = ROOT_DIR + '/build';
 
-var manifest = require(ROOT_DIR + '/dist/view-manifest');
-var tmpl = lodashTemplate(fs.readFileSync(ROOT_DIR + '/dist/index.html', 'utf8'));
+var tmpl = lodashTemplate(fs.readFileSync(BUILD_DIR + '/index.html', 'utf8'));
 var supportedLanguages = ['en'];
 
 var app = express();
 app.disable('x-powered-by');
 app.use(compression());
 app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
-savoy.each(['css', 'js', 'locales'], function(dir) {
-  app.use('/' + dir, express.static(ROOT_DIR + '/dist/' + dir));
+savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
+  app.use('/' + dir, express.static(BUILD_DIR + '/' + dir));
 });
 
 var RedisStore = connectRedis(expressSession);
@@ -82,7 +82,6 @@ app.get('*', function(request, response) {
     response.end(tmpl({
       title: state.route.title,
       meta: meta,
-      manifest: JSON.stringify(manifest),
       state: JSON.stringify(state),
       locale: state.locale,
       viewName: state.route.viewName,
