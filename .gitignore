@@ -1,7 +1,7 @@
 .DS_Store
-coverage/
-dist/
-rev-dist/
-dump.rdb
-node_modules/
 *.log
+*.rdb
+build/
+coverage/
+node_modules/
+sandbox/
