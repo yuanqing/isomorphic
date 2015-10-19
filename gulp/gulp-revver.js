@@ -46,7 +46,6 @@ module.exports = function(options) {
       }));
       callback();
     });
-    // return objectAssign({}, manifest);
   };
   rev.interpolate = function() {
     return through.obj(function(file, encoding, callback) {
