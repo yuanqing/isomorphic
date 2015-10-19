@@ -1,10 +1,9 @@
-// var debug = require('gulp-debug');
+var debug = require('gulp-debug');
 
 var fs = require('fs-extra');
 var bpb = require('bpb');
 var del = require('del');
 var opn = require('opn');
-var rev = require('gulp-rev');
 var gulp = require('gulp');
 var nopt = require('nopt');
 var path = require('path');
@@ -25,7 +24,6 @@ var bulkify = require('bulkify');
 var nodemon = require('nodemon');
 var through = require('through2');
 var htmlmin = require('gulp-htmlmin');
-var replace = require('gulp-replace');
 var babelify = require('babelify');
 var watchify = require('watchify');
 var imagemin = require('gulp-imagemin');
@@ -39,7 +37,14 @@ var factorBundle = require('factor-bundle');
 var autoprefixer = require('gulp-autoprefixer');
 var combineStreams = require('stream-combiner2');
 var istanbulCombine = require('istanbul-combine');
-var requireUncached = require('require-uncached');
+
+// Some hand-rolled gulp plugins.
+var rev = require('./gulp/gulp-revver')({
+  interpolateCallback: function(revvedPath) {
+    return '/' + revvedPath;
+  }
+});
+var call = require('./gulp/gulp-call');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -178,33 +183,11 @@ gulp.task('coverage:client', openCoverage('test:client', 'coverage/client'));
 // BUILD, WATCH, SERVE
 //
 
-var INTERPOLATE_REGEX = /{{\s*([^}]+?)\s*}}/g;
-
 var JS_VENDOR_MODULES = [
   'firebase',
   'react',
   'react-dom'
 ];
-
-var end = function(endCallback) {
-  return through.obj(function(data, encoding, callback) {
-    callback(null, data);
-  }, function(callback) {
-    endCallback();
-    callback();
-  });
-};
-
-var interpolateRevvedPaths = function() {
-  var manifest = requireUncached('./build/manifest.json');
-  return replace(INTERPOLATE_REGEX, function(match, originalPath) {
-    var revvedPath = manifest[originalPath];
-    if (!revvedPath) {
-      throw new Error('Asset not found: ' + originalPath);
-    }
-    return '/' + revvedPath;
-  });
-};
 
 var log = function() {
   return through.obj(function(file, encoding, callback) {
@@ -221,12 +204,7 @@ var build = function(callback) {
     rev(),
     gulp.dest('build'),
     log(),
-    rev.manifest('build/manifest.json', {
-      base: 'build',
-      merge: true
-    }),
-    gulp.dest('build'),
-    callback ? end(callback) : gutil.noop()
+    call(callback)
   );
 };
 
@@ -392,7 +370,7 @@ gulp.task('build:css', function() {
       loadMaps: true
     })))
     .pipe(sass())
-    .pipe(interpolateRevvedPaths())
+    .pipe(rev.interpolate())
     .pipe(concat('css/style.css'))
     .pipe(autoprefixer({
       browsers: ['last 2 versions'],
@@ -424,7 +402,7 @@ gulp.task('build:locales', function(callback) {
       .on('end', callback)
       .pipe(source(moduleName + '.js'))
       .pipe(buffer())
-      .pipe(interpolateRevvedPaths())
+      .pipe(rev.interpolate())
       .pipe(gulpIf(IS_PRODUCTION, uglify()))
       .pipe(build());
   }, callback);
@@ -438,10 +416,11 @@ gulp.task('watch:locales', function() {
 
 gulp.task('build:html', function() {
   return gulp.src('index.html')
-    .pipe(interpolateRevvedPaths())
+    .pipe(rev.interpolate())
     .pipe(gulpIf(IS_PRODUCTION, htmlmin({
       collapseWhitespace: true
     })))
+    .pipe(rev.manifest({ clean: false }))
     .pipe(gulp.dest('build'))
     .pipe(log());
 });
