@@ -40,7 +40,7 @@ var manifest = require(BUILD_DIR + '/manifest.json');
 var locales = savoy.fold(manifest, {}, function(acc, revvedPath, originalPath) {
   if (originalPath.indexOf('locales/') === 0) {
     var locale = path.basename(originalPath, '.js');
-    acc[locale] = '/' + revvedPath;
+    acc[locale] = path.basename(revvedPath, '.js');
   }
   return acc;
 });
