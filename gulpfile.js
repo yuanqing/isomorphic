@@ -1,4 +1,4 @@
-var debug = require('gulp-debug');
+// var debug = require('gulp-debug');
 
 var fs = require('fs-extra');
 var bpb = require('bpb');
@@ -61,8 +61,10 @@ var ARGS = nopt({
   o: ['--open', 'google chrome']
 });
 
+var BUILD_DIR = 'build';
+
 var openInBrowser = function(url, callback) {
-  gutil.log(gutil.colors.white('Opened'), gutil.colors.green(url));
+  gutil.log('Opened', gutil.colors.green(url));
   opn(url, {
     app: ARGS.open,
     wait: false
@@ -189,12 +191,9 @@ var JS_VENDOR_MODULES = [
   'react-dom'
 ];
 
-var log = function() {
+var logBuild = function() {
   return through.obj(function(file, encoding, callback) {
-    gutil.log(
-      gutil.colors.white('Built'),
-      gutil.colors.yellow(path.relative(process.cwd() + '/build', file.path))
-    );
+    gutil.log('Built', gutil.colors.yellow(path.relative(process.cwd() + '/' + BUILD_DIR, file.path)));
     callback(null, file);
   });
 };
@@ -202,8 +201,8 @@ var log = function() {
 var build = function(callback) {
   return combineStreams.obj(
     rev(),
-    gulp.dest('build'),
-    log(),
+    gulp.dest(BUILD_DIR),
+    logBuild(),
     call(callback)
   );
 };
@@ -215,7 +214,7 @@ var browserifyApp = function(options, callback) {
     'js/views/*.js',
     'js/client.js'
   ]);
-  fs.ensureDirSync('build/' + 'js/views');
+  fs.ensureDirSync(BUILD_DIR + '/js/views');
   var b = browserify({
     entries: entries,
     basedir: '.',
@@ -277,14 +276,14 @@ var serve = function(options) {
   var serverScript = 'js/server.js';
   options.script = serverScript;
   if (options.watch) {
-    options.watch = [serverScript, 'build/index.html'];
+    options.watch = [serverScript, BUILD_DIR + '/index.html'];
   }
   return function(callback) {
     var isInitial = true;
     nodemon(options)
       .on('start', function() {
         if (isInitial) {
-          gutil.log(gutil.colors.white('Started'), gutil.colors.red(serverScript));
+          gutil.log('Started', gutil.colors.red(serverScript));
           isInitial = false;
           if (ARGS.open) {
             setTimeout(function() {
@@ -294,12 +293,13 @@ var serve = function(options) {
         }
       })
       .on('restart', function() {
-        gutil.log(gutil.colors.white('Restarted'), gutil.colors.red(serverScript));
+        gutil.log('Restarted', gutil.colors.red(serverScript));
       });
   };
 };
 
 gulp.task('build', function(callback) {
+  gutil.log('Building to', gutil.colors.yellow(BUILD_DIR));
   runSequence(
     'build:clean',
     'build:images',
@@ -307,6 +307,7 @@ gulp.task('build', function(callback) {
     'build:js:app',
     'build:css',
     'build:locales',
+    'build:manifest',
     'build:html',
     callback
   );
@@ -326,7 +327,7 @@ gulp.task('watch', function(callback) {
 });
 
 gulp.task('build:clean', function(callback) {
-  del('build').then(function() {
+  del(BUILD_DIR).then(function() {
     callback();
   });
 });
@@ -339,7 +340,7 @@ gulp.task('build:images', function () {
 
 gulp.task('watch:images', function() {
   gulp.watch('images/*', function() {
-    runSequence('build:images', 'build:css', 'build:locales', 'build:html');
+    runSequence('build:images', 'build:css', 'build:locales', 'build:manifest', 'build:html');
   });
 });
 
@@ -360,7 +361,7 @@ gulp.task('build:js:app', function(callback) {
 
 gulp.task('watch:js:app', function() {
   browserifyApp({ watch: true }, function() {
-    runSequence('build:html');
+    runSequence('build:manifest', 'build:html');
   });
 });
 
@@ -386,7 +387,7 @@ gulp.task('build:css', function() {
 
 gulp.task('watch:css', function() {
   gulp.watch('css/**/*.scss', function() {
-    runSequence('build:css', 'build:locales', 'build:html');
+    runSequence('build:css', 'build:locales', 'build:manifest', 'build:html');
   });
 });
 
@@ -410,7 +411,7 @@ gulp.task('build:locales', function(callback) {
 
 gulp.task('watch:locales', function() {
   gulp.watch('locales/*.json', function() {
-    runSequence('build:locales', 'build:html');
+    runSequence('build:locales', 'build:manifest', 'build:html');
   });
 });
 
@@ -420,9 +421,18 @@ gulp.task('build:html', function() {
     .pipe(gulpIf(IS_PRODUCTION, htmlmin({
       collapseWhitespace: true
     })))
-    .pipe(rev.manifest({ clean: false }))
-    .pipe(gulp.dest('build'))
-    .pipe(log());
+    .pipe(gulp.dest(BUILD_DIR))
+    .pipe(logBuild());
+});
+
+gulp.task('build:manifest', function() {
+  var stream = rev.manifest();
+  process.nextTick(function() {
+    stream.end();
+  });
+  return stream
+    .pipe(gulp.dest(BUILD_DIR))
+    .pipe(logBuild());
 });
 
 gulp.task('watch:html', function() {

@@ -36,7 +36,8 @@ module.exports = function(options) {
   };
   rev.manifest = function(options) {
     options = options || {};
-    var clean = options.clean;
+    // The default behavior is to delete all elements in the pipeline.
+    var clean = options.clean == null ? true : options.clean;
     return through.obj(function(file, encoding, callback) {
       callback(null, clean ? null : file);
     }, function(callback) {
