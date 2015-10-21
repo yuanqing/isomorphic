@@ -258,8 +258,7 @@ var browserifyApp = function(options, callback) {
       .pipe(source('js/common.js'))
       .pipe(buffer())
       .pipe(gulpIf(IS_PRODUCTION, uglify()))
-      .pipe(build())
-      .pipe(streamEnd(callback));
+      .pipe(build(callback));
   };
   if (isWatch) {
     b = watchify(b);
