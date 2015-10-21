@@ -248,10 +248,10 @@ var browserifyApp = function(options, callback) {
     b.plugin(factorBundle, {
       outputs: savoy.map(entries, function(entry) {
         return concatStream(function(contents) {
-          outputs.push(new gutil.File({
+          require('./gulp/stream-start')(new gutil.File({
             path: entry,
             contents: contents
-          }));
+          })).pipe(build());
         });
       })
     }).bundle()
