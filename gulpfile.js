@@ -245,7 +245,6 @@ var browserifyApp = function(options, callback) {
   var bundle = function() {
     // Factor out common modules in each files in `entries` into a common file.
     // .plugin(factorBundle, factorOpts);
-    var outputs = [];
     b.plugin(factorBundle, {
       outputs: savoy.map(entries, function(entry) {
         return concatStream(function(contents) {
@@ -256,14 +255,11 @@ var browserifyApp = function(options, callback) {
         });
       })
     }).bundle()
-      .on('end', function() {
-        eventStream.readArray(outputs)
-          .pipe(build(callback));
-      })
       .pipe(source('js/common.js'))
       .pipe(buffer())
       .pipe(gulpIf(IS_PRODUCTION, uglify()))
-      .pipe(build());
+      .pipe(build())
+      .pipe(streamEnd(callback));
   };
   if (isWatch) {
     b = watchify(b);
