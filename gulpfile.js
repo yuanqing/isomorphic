@@ -44,7 +44,8 @@ var rev = require('./gulp/gulp-revver')({
     return '/' + revvedPath;
   }
 });
-var call = require('./gulp/gulp-call');
+var streamStart = require('./gulp/stream-start');
+var streamEnd = require('./gulp/stream-end');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -203,7 +204,7 @@ var build = function(callback) {
     rev(),
     gulp.dest(BUILD_DIR),
     logBuild(),
-    call(callback)
+    streamEnd(callback)
   );
 };
 
@@ -248,7 +249,7 @@ var browserifyApp = function(options, callback) {
     b.plugin(factorBundle, {
       outputs: savoy.map(entries, function(entry) {
         return concatStream(function(contents) {
-          require('./gulp/stream-start')(new gutil.File({
+          streamStart(new gutil.File({
             path: entry,
             contents: contents
           })).pipe(build());
