@@ -389,7 +389,7 @@ gulp.task('watch:css', function() {
 
 gulp.task('build:locales', function(callback) {
   var localeFiles = globby.sync('locales/*.json');
-  savoy.eachSeries(localeFiles, function(callback, file) {
+  savoy.each(localeFiles, function(callback, file) {
     var moduleName = 'locales/' + path.basename(file, '.json');
     browserify()
       .require(file, {
@@ -401,7 +401,7 @@ gulp.task('build:locales', function(callback) {
       .pipe(buffer())
       .pipe(rev.interpolate())
       .pipe(gulpIf(IS_PRODUCTION, uglify()))
-      .pipe(build());
+      .pipe(build(callback));
   }, callback);
 });
 
