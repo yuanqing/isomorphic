@@ -251,7 +251,9 @@ var browserifyApp = function(options, callback) {
           streamStart(new gutil.File({
             path: entry,
             contents: contents
-          })).pipe(build());
+          }))
+          .pipe(gulpIf(IS_PRODUCTION, uglify()))
+          .pipe(build());
         });
       })
     }).bundle()
