@@ -30,7 +30,6 @@ var imagemin = require('gulp-imagemin');
 var minifyCss = require('gulp-minify-css');
 var browserify = require('browserify');
 var sourcemaps = require('gulp-sourcemaps');
-var eventStream = require('event-stream');
 var runSequence = require('run-sequence');
 var concatStream = require('concat-stream');
 var factorBundle = require('factor-bundle');
