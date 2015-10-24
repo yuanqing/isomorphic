@@ -3,11 +3,11 @@ var ReactDom = require('react-dom');
 
 var linkClickInterceptor = require('lib/link-click-interceptor');
 
-var store = require('./store');
-var firebase = require('./firebase');
-var RootComponent = require('./root-component');
-var routeActionCreator = require('./action-creators/route-action-creator');
-var storeActionCreator = require('./action-creators/store-action-creator');
+var store = require('js/store');
+var firebase = require('js/firebase');
+var RootComponent = require('js/root-component');
+var routeActionCreator = require('js/action-creators/route-action-creator');
+var storeActionCreator = require('js/action-creators/store-action-creator');
 
 ReactDom.render(<RootComponent store={store} />,
   document.querySelector('.app'));

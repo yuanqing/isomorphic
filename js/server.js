@@ -19,6 +19,7 @@ var compileMeta = require('./update-head').compileMeta;
 var config = require('../config');
 var reducers = require('./reducers');
 var RootComponent = require('./root-component');
+var ManifestHelper = require('./manifest-helper');
 var RouteActionCreator = require('./action-creators/route-action-creator');
 var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
@@ -37,13 +38,8 @@ savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
 });
 
 var manifest = require(BUILD_DIR + '/manifest.json');
-var locales = savoy.fold(manifest, {}, function(acc, revvedPath, originalPath) {
-  if (originalPath.indexOf('locales/') === 0) {
-    var locale = path.basename(originalPath, '.js');
-    acc[locale] = path.basename(revvedPath, '.js');
-  }
-  return acc;
-});
+var viewHashes = ManifestHelper.getViewHashes(manifest);
+var localeHashes = ManifestHelper.getLocaleHashes(manifest);
 
 var RedisStore = connectRedis(expressSession);
 app.use(expressSession({
@@ -88,12 +84,14 @@ app.get('*', function(request, response) {
     var reactElement = React.createElement(RootComponent, {
       store: store
     });
+    var viewName = state.route.viewName;
+    var localeName = state.locale;
     response.end(tmpl({
       title: state.route.title,
       meta: meta,
       state: JSON.stringify(state),
-      locale: locales[state.locale],
-      viewName: state.route.viewName,
+      localeName: localeName + '-' + localeHashes[localeName],
+      viewName: viewName + '-' + viewHashes[viewName],
       app: ReactDOMServer.renderToString(reactElement)
     }));
   });

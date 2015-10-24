@@ -46,6 +46,8 @@ var rev = require('./gulp/gulp-revver')({
 var streamStart = require('./gulp/stream-start');
 var streamEnd = require('./gulp/stream-end');
 
+var ManifestHelper = require('js/manifest-helper');
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -215,11 +217,15 @@ var browserifyApp = function(options, callback) {
     'js/client.js'
   ]);
   fs.ensureDirSync(BUILD_DIR + '/js/views');
+  var routeActionCreatorModule = 'js/action-creators/route-action-creator';
   var b = browserify({
     entries: entries,
     basedir: '.',
     debug: !IS_PRODUCTION
   }).external(JS_VENDOR_MODULES)
+    .require('./' + routeActionCreatorModule + '.js', {
+      expose: routeActionCreatorModule
+    })
     // Compile JSX.
     .transform(babelify)
     // Allow requiring by a glob.
@@ -258,6 +264,12 @@ var browserifyApp = function(options, callback) {
     }).bundle()
       .pipe(source('js/common.js'))
       .pipe(buffer())
+      .pipe(through.obj(function(file, encoding, callback) {
+        var viewRevvedHashes = ManifestHelper.getViewHashes(rev.getManifest())
+        var contents = file.contents.toString();
+        file.contents = new Buffer(contents.replace(/window.__MANIFEST__/g, JSON.stringify(viewRevvedHashes)));
+        callback(null, file);
+      }))
       .pipe(gulpIf(IS_PRODUCTION, uglify()))
       .pipe(build(callback));
   };

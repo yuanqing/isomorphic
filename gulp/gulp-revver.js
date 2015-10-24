@@ -48,6 +48,9 @@ module.exports = function(options) {
       callback();
     });
   };
+  rev.getManifest = function() {
+    return objectAssign({}, manifest);
+  };
   rev.interpolate = function() {
     return through.obj(function(file, encoding, callback) {
       var contents = file.contents.toString().replace(interpolateRegex, function(match, originalPath) {
