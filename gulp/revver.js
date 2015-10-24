@@ -1,6 +1,7 @@
 'use strict';
 
 var path = require('path');
+var savoy = require('savoy');
 var gutil = require('gulp-util');
 var revHash = require('rev-hash');
 var revPath = require('rev-path');
@@ -11,7 +12,7 @@ var identity = function(x) {
   return x;
 };
 
-var PLUGIN_NAME = 'gulp-revver';
+var PLUGIN_NAME = 'revver';
 
 module.exports = function(options) {
   options = options || {};
@@ -50,6 +51,16 @@ module.exports = function(options) {
   };
   rev.getManifest = function() {
     return objectAssign({}, manifest);
+  };
+  rev.getHashes = function(prefix) {
+    return savoy.fold(manifest, {}, function(acc, revvedPath, originalPath) {
+      if (originalPath.indexOf(prefix) === 0) {
+        var key = path.basename(originalPath, '.js');
+        var value = path.basename(revvedPath, '.js').substring(key.length + 1);
+        acc[key] = value;
+      }
+      return acc;
+    });
   };
   rev.interpolate = function() {
     return through.obj(function(file, encoding, callback) {

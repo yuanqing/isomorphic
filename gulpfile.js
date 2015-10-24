@@ -38,15 +38,13 @@ var combineStreams = require('stream-combiner2');
 var istanbulCombine = require('istanbul-combine');
 
 // Some hand-rolled gulp plugins.
-var rev = require('./gulp/gulp-revver')({
+var rev = require('./gulp/revver')({
   interpolateCallback: function(revvedPath) {
     return '/' + revvedPath;
   }
 });
 var streamStart = require('./gulp/stream-start');
 var streamEnd = require('./gulp/stream-end');
-
-var ManifestHelper = require('js/manifest-helper');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -265,9 +263,8 @@ var browserifyApp = function(options, callback) {
       .pipe(source('js/common.js'))
       .pipe(buffer())
       .pipe(through.obj(function(file, encoding, callback) {
-        var viewRevvedHashes = ManifestHelper.getViewHashes(rev.getManifest())
-        var contents = file.contents.toString();
-        file.contents = new Buffer(contents.replace(/window.__MANIFEST__/g, JSON.stringify(viewRevvedHashes)));
+        var viewHashes = rev.getHashes('js/views');
+        file.contents = new Buffer(file.contents.toString().replace(/window.__MANIFEST__/g, JSON.stringify(viewHashes)));
         callback(null, file);
       }))
       .pipe(gulpIf(IS_PRODUCTION, uglify()))

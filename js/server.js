@@ -14,12 +14,12 @@ var lodashTemplate = require('lodash.template');
 var ReactDOMServer = require('react-dom/server');
 
 var Store = require('lib/store');
-var compileMeta = require('./update-head').compileMeta;
+var revver = require('../gulp/revver');
 
 var config = require('../config');
 var reducers = require('./reducers');
+var compileMeta = require('./update-head').compileMeta;
 var RootComponent = require('./root-component');
-var ManifestHelper = require('./manifest-helper');
 var RouteActionCreator = require('./action-creators/route-action-creator');
 var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
@@ -38,8 +38,11 @@ savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
 });
 
 var manifest = require(BUILD_DIR + '/manifest.json');
-var viewHashes = ManifestHelper.getViewHashes(manifest);
-var localeHashes = ManifestHelper.getLocaleHashes(manifest);
+var rev = revver({
+  manifest: manifest
+});
+var viewHashes = rev.getHashes('js/views/');
+var localeHashes = rev.getHashes('locales/');
 
 var RedisStore = connectRedis(expressSession);
 app.use(expressSession({
