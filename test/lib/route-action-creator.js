@@ -8,25 +8,20 @@ var getHistoryLength = function() {
   return process.browser ? window.history.length : null;
 };
 
+var loadView = function(viewName, callback) {
+  callback();
+};
+
 var routes = {
   'foo': function() {
-    this.render('foo');
+    this.render('foo', 'bar', 'baz');
   },
   'bar': function() {
     this.route('foo');
   },
   '404': function() {
-    this.error('404');
+    this.error('404', 'qux', 'quux');
   }
-};
-
-var componentLoader = function(viewName, callback) {
-  callback();
-};
-var translate = function() {
-  return function(key) {
-    return key;
-  };
 };
 
 test('`route` returns a function', function(t) {
@@ -46,11 +41,15 @@ test('route where `render` is called', function(t) {
     actions.push(action);
     callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, {
-    store: store,
-    componentLoader: componentLoader,
-    t: translate
-  });
+  var options = {
+    translate: function() {}
+  };
+  if (process.browser) {
+    options.store = store;
+    options.loadView = loadView;
+    options.updateHead = function() {};
+  }
+  var routeActionCreator = new RouteActionCreator(routes, options);
   var routeAction = routeActionCreator.route('foo', {
     store: store
   });
@@ -72,7 +71,9 @@ test('route where `render` is called', function(t) {
         type: RouteActionTypes.ROUTE_SUCCESS,
         payload: {
           url: 'foo',
-          viewName: 'foo'
+          viewName: 'foo',
+          title: 'bar',
+          meta: 'baz'
         }
       }
     ]);
@@ -89,11 +90,15 @@ test('route where `render` is called, with `isPopState` set to `true`', function
     actions.push(action);
     callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, {
-    store: store,
-    componentLoader: componentLoader,
-    t: translate
-  });
+  var options = {
+    translate: function() {}
+  };
+  if (process.browser) {
+    options.store = store;
+    options.loadView = loadView;
+    options.updateHead = function() {};
+  }
+  var routeActionCreator = new RouteActionCreator(routes, options);
   var routeAction = routeActionCreator.route('foo', {
     store: store,
     isPopstate: true
@@ -116,7 +121,9 @@ test('route where `render` is called, with `isPopState` set to `true`', function
         type: RouteActionTypes.ROUTE_SUCCESS,
         payload: {
           url: 'foo',
-          viewName: 'foo'
+          viewName: 'foo',
+          title: 'bar',
+          meta: 'baz'
         }
       }
     ]);
@@ -124,7 +131,6 @@ test('route where `render` is called, with `isPopState` set to `true`', function
 });
 
 test('route where `route` is called', function(t) {
-  t.plan(1);
   var actions = [];
   var store = new Store(function(action, state) {
     return state;
@@ -133,22 +139,46 @@ test('route where `route` is called', function(t) {
     actions.push(action);
     callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, {
-    store: store,
-    componentLoader: componentLoader,
-    t: translate
-  });
+  var options = {
+    translate: function() {}
+  };
+  if (process.browser) {
+    options.store = store;
+    options.loadView = loadView;
+    options.updateHead = function() {};
+  }
+  var routeActionCreator = new RouteActionCreator(routes, options);
   var routeAction = routeActionCreator.route('bar', {
     store: store
   });
   routeAction(function() {
     if (process.browser) {
-      // On the client-side, just route to `foo`.
+      // On the client-side, route to `foo`.
       t.looseEqual(actions[0], {
         type: RouteActionTypes.ROUTE_REQUEST,
         payload: {
           url: 'bar'
         }
+      });
+      t.true(typeof actions[1] === 'function'); // callback
+      actions[1](function() {
+        t.equal(actions.length, 4);
+        t.looseEqual(actions[2], {
+          type: RouteActionTypes.ROUTE_REQUEST,
+          payload: {
+            url: 'foo'
+          }
+        });
+        t.looseEqual(actions[3], {
+          type: RouteActionTypes.ROUTE_SUCCESS,
+          payload: {
+            url: 'foo',
+            viewName: 'foo',
+            title: 'bar',
+            meta: 'baz'
+          }
+        });
+        t.end();
       });
     } else {
       // On the server-side, do a 301 redirect to `foo`.
@@ -166,6 +196,7 @@ test('route where `route` is called', function(t) {
           }
         }
       ]);
+      t.end();
     }
   });
 });
@@ -180,11 +211,15 @@ test('route where `error` is called', function(t) {
     actions.push(action);
     callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, {
-    store: store,
-    componentLoader: componentLoader,
-    t: translate
-  });
+  var options = {
+    translate: function() {}
+  };
+  if (process.browser) {
+    options.store = store;
+    options.loadView = loadView;
+    options.updateHead = function() {};
+  }
+  var routeActionCreator = new RouteActionCreator(routes, options);
   var routeAction = routeActionCreator.route('404', {
     store: store
   });
@@ -200,7 +235,9 @@ test('route where `error` is called', function(t) {
         type: RouteActionTypes.ROUTE_ERROR,
         payload: {
           url: '404',
-          viewName: '404'
+          viewName: '404',
+          title: 'qux',
+          meta: 'quux'
         }
       }
     ]);
@@ -217,11 +254,15 @@ test('non-existent route', function(t) {
     actions.push(action);
     callback && callback();
   };
-  var routeActionCreator = new RouteActionCreator(routes, {
-    store: store,
-    componentLoader: componentLoader,
-    t: translate
-  });
+  var options = {
+    translate: function() {}
+  };
+  if (process.browser) {
+    options.store = store;
+    options.loadView = loadView;
+    options.updateHead = function() {};
+  }
+  var routeActionCreator = new RouteActionCreator(routes, options);
   var routeAction = routeActionCreator.route('fail', {
     store: store
   });
@@ -237,7 +278,9 @@ test('non-existent route', function(t) {
         type: RouteActionTypes.ROUTE_ERROR,
         payload: {
           url: 'fail',
-          viewName: '404'
+          viewName: '404',
+          title: 'qux',
+          meta: 'quux'
         }
       }
     ]);
