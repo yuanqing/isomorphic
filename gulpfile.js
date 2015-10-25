@@ -4,6 +4,7 @@ var fs = require('fs-extra');
 var bpb = require('bpb');
 var del = require('del');
 var opn = require('opn');
+var tsu = require('tsu');
 var gulp = require('gulp');
 var nopt = require('nopt');
 var path = require('path');
@@ -43,9 +44,6 @@ var revver = new Revver({
     return '/' + revvedPath;
   }
 });
-
-var streamStart = require('./gulp/stream-start');
-var streamEnd = require('./gulp/stream-end');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -204,7 +202,7 @@ var build = function(callback) {
     revver.rev(),
     gulp.dest(BUILD_DIR),
     logBuild(),
-    streamEnd(callback)
+    tsu.flush(callback || function() {})
   );
 };
 
@@ -252,7 +250,7 @@ var browserifyApp = function(options, callback) {
     b.plugin(factorBundle, {
       outputs: savoy.map(entries, function(entry) {
         return concatStream(function(contents) {
-          streamStart(new gutil.File({
+          tsu.source(new gutil.File({
             path: entry,
             contents: contents
           }))
@@ -264,7 +262,7 @@ var browserifyApp = function(options, callback) {
       .pipe(source('js/common.js'))
       .pipe(buffer())
       .pipe(through.obj(function(file, encoding, callback) {
-        var viewHashes = revver.getHashes('js/views');
+        var viewHashes = revver.getHashes({ prefix: 'js/views/' });
         file.contents = new Buffer(file.contents.toString().replace(/window.__MANIFEST__/g, JSON.stringify(viewHashes)));
         callback(null, file);
       }))

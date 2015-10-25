@@ -2,6 +2,7 @@ require('babel/register');
 
 var fs = require('fs');
 var path = require('path');
+var omit = require('lodash.omit');
 var savoy = require('savoy');
 var React = global.React = require('react');
 var Revver = require('revver');
@@ -40,8 +41,8 @@ savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
 var revver = new Revver({
   manifest: require(BUILD_DIR + '/manifest.json')
 });
-var viewHashes = revver.getHashes('js/views/');
-var localeHashes = revver.getHashes('locales/');
+var viewHashes = revver.getHashes({ prefix: 'js/views/' });
+var localeHashes = revver.getHashes({ prefix: 'locales/' });
 
 var RedisStore = connectRedis(expressSession);
 app.use(expressSession({
@@ -82,7 +83,7 @@ app.get('*', function(request, response) {
       }
     }
     var meta = compileMeta(state.route.meta);
-    delete state.route.meta;
+    omit(state.route, 'meta');
     var reactElement = React.createElement(RootComponent, {
       store: store
     });
