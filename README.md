@@ -1,4 +1,4 @@
-![Stability Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)
+[![Build Status](https://img.shields.io/travis/yuanqing/isomorphic.svg?branch=master&style=flat)](https://travis-ci.org/yuanqing/isomorphic) ![Stability Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)
 
 ## Ideas
 
