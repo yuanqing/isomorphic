@@ -67,11 +67,13 @@ Directory | Description
 
 ## Todo
 
-- Allow views to set their own title and `meta`
-- More tests
-- Documentation + explain design decisions
-- Move to [watchify](https://github.com/substack/watchify)
-- [Firebase](lib/firebase.js): patching/updates, tests
-- [Asset versioning](https://github.com/sindresorhus/gulp-rev)
-- Authentication / sessions
-- Deployment
+- [X] Code splitting and on-demand loading
+- [X] i18n
+- [X] Allow views to set their own title and `meta`
+- [X] Move to [watchify](https://github.com/substack/watchify)
+- [X] Asset versioning
+- [ ] More tests
+- [ ] Documentation + explain design decisions
+- [ ] [Firebase](lib/firebase.js): patching/updates, tests
+- [ ] Authentication / sessions
+- [ ] Deployment
