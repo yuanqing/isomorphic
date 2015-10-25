@@ -12,7 +12,7 @@ test('does not mutate the first argument', function(t) {
     y: 'new'
   };
   var result = assign(foo, bar);
-  t.ok(result !== foo);
+  t.true(result !== foo);
   t.looseEqual(result, {
     x: 42,
     y: 'new'
