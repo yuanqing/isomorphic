@@ -14,6 +14,7 @@ var gutil = require('gulp-util');
 var shell = require('gulp-shell');
 var envify = require('envify');
 var globby = require('globby');
+var Revver = require('revver');
 var gulpIf = require('gulp-if');
 var eslint = require('gulp-eslint');
 var concat = require('gulp-concat');
@@ -37,12 +38,12 @@ var autoprefixer = require('gulp-autoprefixer');
 var combineStreams = require('stream-combiner2');
 var istanbulCombine = require('istanbul-combine');
 
-// Some hand-rolled gulp plugins.
-var rev = require('./gulp/revver')({
+var revver = new Revver({
   interpolateCallback: function(revvedPath) {
     return '/' + revvedPath;
   }
 });
+
 var streamStart = require('./gulp/stream-start');
 var streamEnd = require('./gulp/stream-end');
 
@@ -200,7 +201,7 @@ var logBuild = function() {
 
 var build = function(callback) {
   return combineStreams.obj(
-    rev(),
+    revver.rev(),
     gulp.dest(BUILD_DIR),
     logBuild(),
     streamEnd(callback)
@@ -263,7 +264,7 @@ var browserifyApp = function(options, callback) {
       .pipe(source('js/common.js'))
       .pipe(buffer())
       .pipe(through.obj(function(file, encoding, callback) {
-        var viewHashes = rev.getHashes('js/views');
+        var viewHashes = revver.getHashes('js/views');
         file.contents = new Buffer(file.contents.toString().replace(/window.__MANIFEST__/g, JSON.stringify(viewHashes)));
         callback(null, file);
       }))
@@ -377,7 +378,7 @@ gulp.task('build:css', function() {
       loadMaps: true
     })))
     .pipe(sass())
-    .pipe(rev.interpolate())
+    .pipe(revver.interpolate())
     .pipe(concat('css/style.css'))
     .pipe(autoprefixer({
       browsers: ['last 2 versions'],
@@ -409,7 +410,7 @@ gulp.task('build:locales', function(callback) {
       .on('end', callback)
       .pipe(source(moduleName + '.js'))
       .pipe(buffer())
-      .pipe(rev.interpolate())
+      .pipe(revver.interpolate())
       .pipe(gulpIf(IS_PRODUCTION, uglify()))
       .pipe(build(callback));
   }, callback);
@@ -423,7 +424,7 @@ gulp.task('watch:locales', function() {
 
 gulp.task('build:html', function() {
   return gulp.src('index.html')
-    .pipe(rev.interpolate())
+    .pipe(revver.interpolate())
     .pipe(gulpIf(IS_PRODUCTION, htmlmin({
       collapseWhitespace: true
     })))
@@ -432,7 +433,7 @@ gulp.task('build:html', function() {
 });
 
 gulp.task('build:manifest', function() {
-  var stream = rev.manifest();
+  var stream = revver.manifest();
   process.nextTick(function() {
     stream.end();
   });

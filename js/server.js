@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require('path');
 var savoy = require('savoy');
 var React = global.React = require('react');
+var Revver = require('revver');
 var express = require('express');
 var Negotiator = require('negotiator');
 var compression = require('compression');
@@ -14,7 +15,6 @@ var lodashTemplate = require('lodash.template');
 var ReactDOMServer = require('react-dom/server');
 
 var Store = require('lib/store');
-var revver = require('../gulp/revver');
 
 var config = require('../config');
 var reducers = require('./reducers');
@@ -37,12 +37,11 @@ savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
   app.use('/' + dir, express.static(BUILD_DIR + '/' + dir));
 });
 
-var manifest = require(BUILD_DIR + '/manifest.json');
-var rev = revver({
-  manifest: manifest
+var revver = new Revver({
+  manifest: require(BUILD_DIR + '/manifest.json')
 });
-var viewHashes = rev.getHashes('js/views/');
-var localeHashes = rev.getHashes('locales/');
+var viewHashes = revver.getHashes('js/views/');
+var localeHashes = revver.getHashes('locales/');
 
 var RedisStore = connectRedis(expressSession);
 app.use(expressSession({
