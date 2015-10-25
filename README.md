@@ -1,5 +1,19 @@
 [![Build Status](https://img.shields.io/travis/yuanqing/isomorphic.svg?branch=master&style=flat)](https://travis-ci.org/yuanqing/isomorphic) ![Stability Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)
 
+## Todo
+
+- [X] Code splitting and on-demand loading
+- [X] i18n
+- [X] Allow views to set their own title and `meta`
+- [X] Move to [watchify](https://github.com/substack/watchify)
+- [X] Asset versioning
+- [ ] Clean up existing tests
+- [ ] More tests
+- [ ] [Firebase](lib/firebase.js): patching/updates
+- [ ] Authentication / sessions
+- [ ] Documentation + explain design decisions
+- [ ] Deployment + AWS integration
+
 ## Ideas
 
 1. [**Redux**](http://rackt.github.io/redux/docs/introduction/ThreePrinciples.html) &mdash; *Single source of truth.* App state is represented as a single JSON object. This allows app state from the server to be serialised and transmitted to the client.
@@ -52,8 +66,7 @@ Directory | Description
 :--|:--
 `assets` | Static assets.
 `config` | Configuration files. The configuration file that is used is determined by `NODE_ENV`.
-`css` | Our app Sass files.
-`js` | Our app JavaScript files.
+`css`, `js`, `images` | The app Sass, JavaScript and image files.
 `lib` | The code for the core framework, consumed by code in the `js` directory. (Code in this directory can eventually be abstracted into a standalone npm module.)
 `test` | Tests for the code in `js` and `lib`.
 
@@ -62,18 +75,5 @@ Some directories only exist locally (and should not be checked into source contr
 Directory | Description
 :--|:--
 `coverage` | Test coverage reports.
-`dist` | Our compiled CSS and JS.
+`build` | Our compiled CSS and JS.
 `node_modules` | Dependencies.
-
-## Todo
-
-- [X] Code splitting and on-demand loading
-- [X] i18n
-- [X] Allow views to set their own title and `meta`
-- [X] Move to [watchify](https://github.com/substack/watchify)
-- [X] Asset versioning
-- [ ] More tests
-- [ ] Documentation + explain design decisions
-- [ ] [Firebase](lib/firebase.js): patching/updates, tests
-- [ ] Authentication / sessions
-- [ ] Deployment
