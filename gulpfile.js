@@ -136,7 +136,7 @@ gulp.task('test:client', function(callback) {
 
 gulp.task('test:client:run', function(callback) {
   new karma.Server({
-    configFile: 'karma.conf.js',
+    configFile: __dirname + '/karma.conf.js',
     coverageReporter: {
       dir: 'coverage/client',
       subdir: '.',
