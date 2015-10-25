@@ -26,20 +26,24 @@ test('route request', function(t) {
 
 test('route success', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeSuccess('/foo', 'bar', 'baz'), {}, assign), {
+  t.looseEqual(routeReducer(routeActionCreator.routeSuccess('/foo', 'bar', 'baz', 'qux'), {}, assign), {
+    isPending: false,
     url: '/foo',
     viewName: 'bar',
-    isPending: false
+    title: 'baz',
+    meta: 'qux'
   });
 });
 
 test('route error', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeError('/foo', 'bar', 'baz'), {}, assign), {
+  t.looseEqual(routeReducer(routeActionCreator.routeError('/foo', 'bar', 'baz', 'qux'), {}, assign), {
+    error: true,
+    isPending: false,
     url: '/foo',
     viewName: 'bar',
-    isPending: false,
-    error: true
+    title: 'baz',
+    meta: 'qux'
   });
 });
 
