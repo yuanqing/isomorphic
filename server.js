@@ -31,7 +31,7 @@ var tmpl = lodashTemplate(fs.readFileSync(BUILD_DIR + '/index.html', 'utf8'));
 var app = express();
 app.disable('x-powered-by');
 app.use(compression());
-app.use(serveFavicon('./assets/favicon.ico'));
+app.use(serveFavicon('./favicon.ico'));
 savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
   app.use('/' + dir, express.static(BUILD_DIR + '/' + dir));
 });

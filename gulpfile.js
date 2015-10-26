@@ -323,12 +323,12 @@ gulp.task('build:clean', function(callback) {
 });
 
 gulp.task('build:images', function () {
-  return gulp.src('images/*', { base: '.' })
+  return gulp.src('images/**/*.{gif,jpg,png}', { base: '.' })
     .pipe(gulpIf(IS_PRODUCTION, imagemin()))
     .pipe(build());
 });
 gulp.task('watch:images', function() {
-  gulp.watch('images/*', function() {
+  gulp.watch('images/**/*.{gif,jpg,png}', function() {
     runSequence('build:images', 'build:css', 'build:locales', 'build:manifest', 'build:html');
   });
 });
