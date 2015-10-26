@@ -18,8 +18,8 @@ test('dispatch a synchronous action', function(t) {
   var synchronousAction = {
     type: 'FOO'
   };
-  var reducer = function(action, state, assign) {
-    t.equal(action, synchronousAction);
+  var reducer = function(type, payload, state, assign) {
+    t.equal(type, synchronousAction.type);
     return assign(state, {
       foo: 3.142,
       bar: 'baz'

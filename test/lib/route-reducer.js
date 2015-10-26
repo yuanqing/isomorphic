@@ -8,17 +8,19 @@ var routeActionCreator = new RouteActionCreator({});
 
 test('invalid action', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer({ type: 'foo' }, { bar: 'baz' }, assign), { bar: 'baz' });
+  t.looseEqual(routeReducer('foo', {}, { bar: 'baz' }, assign), { bar: 'baz' });
 });
 
 test('route to a given `url`', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.route('/foo'), {}, assign), {});
+  var action = routeActionCreator.route('/foo');
+  t.looseEqual(routeReducer(action.type, action.payload, {}, assign), {});
 });
 
 test('route request', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeRequest('/foo'), {}, assign), {
+  var action = routeActionCreator.routeRequest('/foo');
+  t.looseEqual(routeReducer(action.type, action.payload, {}, assign), {
     url: '/foo',
     isPending: true
   });
@@ -26,7 +28,8 @@ test('route request', function(t) {
 
 test('route success', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeSuccess('/foo', 'bar', 'baz', 'qux'), {}, assign), {
+  var action = routeActionCreator.routeSuccess('/foo', 'bar', 'baz', 'qux');
+  t.looseEqual(routeReducer(action.type, action.payload, {}, assign), {
     isPending: false,
     url: '/foo',
     viewName: 'bar',
@@ -37,7 +40,8 @@ test('route success', function(t) {
 
 test('route error', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.routeError('/foo', 'bar', 'baz', 'qux'), {}, assign), {
+  var action = routeActionCreator.routeError('/foo', 'bar', 'baz', 'qux');
+  t.looseEqual(routeReducer(action.type, action.payload, {}, assign), {
     error: true,
     isPending: false,
     url: '/foo',
@@ -49,7 +53,8 @@ test('route error', function(t) {
 
 test('redirect to a given `url`', function(t) {
   t.plan(1);
-  t.looseEqual(routeReducer(routeActionCreator.redirect('/baz'), {}, assign), {
+  var action = routeActionCreator.redirect('/baz');
+  t.looseEqual(routeReducer(action.type, action.payload, {}, assign), {
     redirectUrl: '/baz'
   });
 });

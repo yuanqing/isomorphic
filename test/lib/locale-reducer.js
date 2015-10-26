@@ -6,10 +6,14 @@ var LocaleActionCreator = require('../../lib/action-creators/locale-action-creat
 
 test('invalid action', function(t) {
   t.plan(1);
-  t.looseEqual(localeReducer({ type: 'foo' }, { bar: 'baz' }, assign), { bar: 'baz' });
+  t.looseEqual(localeReducer('foo', {}, { bar: 'baz' }, assign), { bar: 'baz' });
 });
 
 test('set to the given `locale`', function(t) {
   t.plan(1);
-  t.looseEqual(localeReducer(LocaleActionCreator.setLocale('en-us'), undefined, assign), 'en-us');
+  var action = LocaleActionCreator.setLocale({
+    language: 'en',
+    country: 'us'
+  });
+  t.looseEqual(localeReducer(action.type, action.payload, {}, assign), 'en-us');
 });
