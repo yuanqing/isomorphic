@@ -19,15 +19,6 @@
 2. [**Flux**](https://facebook.github.io/flux/docs/overview.html) &mdash; *Unidirectional data flow.* Without exception, data always flows in a single direction through the app. This makes the app a bit easier to reason about.
 3. [**React**](https://facebook.github.io/react/docs/why-react.html#declarative) &mdash; *The view layer as a black box.* Whenever there is a change in the app state, our mental model can be that we will always re-render the entire view; in practice, only the minimal set of DOM mutations are performed.
 
-## Tooling
-
-- Build system: [**Gulp**](https://github.com/gulpjs/gulp)
-- Bundling: [**Browserify**](http://browserify.org/)
-- Linter: [**ESLint**](http://eslint.org/)
-- Tests: [**Tape**](https://github.com/substack/tape), [**Karma**](http://karma-runner.github.io/)
-- Test coverage: [**Istanbul**](https://github.com/gotwarlost/istanbul)
-- CSS: [**Sass**](http://sass-lang.com/)
-
 ## Usage
 
 ### Setup
