@@ -1,6 +1,6 @@
 var storeActionCreator = require('js/action-creators/store-action-creator');
 
-var stores = function() {
+var stores = module.exports = function() {
   this.render('home');
 };
 
@@ -16,5 +16,3 @@ stores.store = function(params, store) {
   }
   store.dispatch(storeActionCreator.fetchProducts(storeSlug), render);
 };
-
-module.exports = stores;
