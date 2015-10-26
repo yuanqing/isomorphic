@@ -5,7 +5,6 @@
 - [X] Code splitting and on-demand loading
 - [X] i18n
 - [X] Allow views to set their own title and `meta`
-- [X] Move to [watchify](https://github.com/substack/watchify)
 - [X] Asset versioning
 - [ ] Clean up existing tests
 - [ ] More tests

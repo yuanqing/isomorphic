@@ -27,7 +27,6 @@ var nodemon = require('nodemon');
 var through = require('through2');
 var htmlmin = require('gulp-htmlmin');
 var babelify = require('babelify');
-var watchify = require('watchify');
 var imagemin = require('gulp-imagemin');
 var minifyCss = require('gulp-minify-css');
 var browserify = require('browserify');
@@ -39,17 +38,17 @@ var autoprefixer = require('gulp-autoprefixer');
 var combineStreams = require('stream-combiner2');
 var istanbulCombine = require('istanbul-combine');
 
-var revver = new Revver({
-  interpolateCallback: function(revvedPath) {
-    return '/' + revvedPath;
-  }
-});
-
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 var config = require('./config');
 var testServer = require('./test/server');
+
+var revver = new Revver({
+  interpolateCallback: function(revvedPath) {
+    return '/' + revvedPath;
+  }
+});
 
 var APP_URL = 'http://localhost:' + config.expressPort;
 
@@ -98,11 +97,9 @@ gulp.task('test:clean', function(callback) {
 });
 
 var server = null;
-
 gulp.task('test:setup', function(callback) {
   server = testServer.listen(config.testPort, callback);
 });
-
 gulp.task('test:teardown', function(callback) {
   server.close(callback);
   server = null;
@@ -114,11 +111,10 @@ gulp.task('test:server', function(callback) {
       if (err) {
         throw err;
       }
-      callback(err);
+      callback();
     });
   });
 });
-
 gulp.task('test:server:run', shell.task([
   'istanbul --dir=coverage/server -x=**/config/** cover -- tape test/lib/*.js'
 ]));
@@ -129,11 +125,10 @@ gulp.task('test:client', function(callback) {
       if (err) {
         throw err;
       }
-      callback(err);
+      callback();
     });
   });
 });
-
 gulp.task('test:client:run', function(callback) {
   new karma.Server({
     configFile: __dirname + '/karma.conf.js',
@@ -173,11 +168,8 @@ var openCoverage = function(taskName, coverageDir) {
     runSequence(taskName, openCoverageFile);
   };
 };
-
 gulp.task('coverage', openCoverage('test', 'coverage'));
-
 gulp.task('coverage:server', openCoverage('test:server', 'coverage/server'));
-
 gulp.task('coverage:client', openCoverage('test:client', 'coverage/client'));
 
 //
@@ -192,7 +184,8 @@ var JS_VENDOR_MODULES = [
 
 var logBuild = function() {
   return through.obj(function(file, encoding, callback) {
-    gutil.log('Built', gutil.colors.yellow(path.relative(process.cwd() + '/' + BUILD_DIR, file.path)));
+    gutil.log('Built', gutil.colors.yellow(path.relative(process.cwd() + '/' +
+      BUILD_DIR, file.path)));
     callback(null, file);
   });
 };
@@ -206,16 +199,14 @@ var build = function(callback) {
   );
 };
 
-var browserifyApp = function(options, callback) {
-  options = options || {};
-  var isWatch = options.watch;
+var browserifyApp = function(callback) {
   var entries = globby.sync([
     'js/views/*.js',
     'js/client.js'
   ]);
   fs.ensureDirSync(BUILD_DIR + '/js/views');
   var routeActionCreatorModule = 'js/action-creators/route-action-creator';
-  var b = browserify({
+  return browserify({
     entries: entries,
     basedir: '.',
     debug: !IS_PRODUCTION
@@ -243,11 +234,9 @@ var browserifyApp = function(options, callback) {
         }
         callback(null, row);
       }));
-    });
-  var bundle = function() {
+    })
     // Factor out common modules in each files in `entries` into a common file.
-    // .plugin(factorBundle, factorOpts);
-    b.plugin(factorBundle, {
+    .plugin(factorBundle, {
       outputs: savoy.map(entries, function(entry) {
         return concatStream(function(contents) {
           tsu.source(new gutil.File({
@@ -258,22 +247,17 @@ var browserifyApp = function(options, callback) {
           .pipe(build());
         });
       })
-    }).bundle()
-      .pipe(source('js/common.js'))
-      .pipe(buffer())
-      .pipe(through.obj(function(file, encoding, callback) {
-        var viewHashes = revver.getHashes({ prefix: 'js/views/' });
-        file.contents = new Buffer(file.contents.toString().replace(/window.__MANIFEST__/g, JSON.stringify(viewHashes)));
-        callback(null, file);
-      }))
-      .pipe(gulpIf(IS_PRODUCTION, uglify()))
-      .pipe(build(callback));
-  };
-  if (isWatch) {
-    b = watchify(b);
-    b.on('update', bundle);
-  }
-  bundle();
+    })
+    .bundle()
+    .pipe(source('js/common.js'))
+    .pipe(buffer())
+    .pipe(through.obj(function(file, encoding, callback) {
+      var viewHashes = revver.getHashes({ prefix: 'js/views/' });
+      file.contents = new Buffer(file.contents.toString().replace(/window.__MANIFEST__/g, JSON.stringify(viewHashes)));
+      callback(null, file);
+    }))
+    .pipe(gulpIf(IS_PRODUCTION, uglify()))
+    .pipe(build(callback));
 };
 
 var serve = function(options) {
@@ -342,7 +326,6 @@ gulp.task('build:images', function () {
     .pipe(gulpIf(IS_PRODUCTION, imagemin()))
     .pipe(build());
 });
-
 gulp.task('watch:images', function() {
   gulp.watch('images/*', function() {
     runSequence('build:images', 'build:css', 'build:locales', 'build:manifest', 'build:html');
@@ -361,12 +344,12 @@ gulp.task('build:js:vendor', function() {
 });
 
 gulp.task('build:js:app', function(callback) {
-  browserifyApp({ watch: false }, callback);
+  browserifyApp(callback);
 });
-
 gulp.task('watch:js:app', function() {
-  browserifyApp({ watch: true }, function() {
-    runSequence('build:manifest', 'build:html');
+  gulp.watch(['js/**/*.js', 'lib/**/*.js'], function() {
+    runSequence('build:js:app', 'build:css', 'build:locales', 'build:manifest',
+      'build:html');
   });
 });
 
@@ -389,7 +372,6 @@ gulp.task('build:css', function() {
     .pipe(gulpIf(!IS_PRODUCTION, sourcemaps.write()))
     .pipe(build());
 });
-
 gulp.task('watch:css', function() {
   gulp.watch('css/**/*.scss', function() {
     runSequence('build:css', 'build:locales', 'build:manifest', 'build:html');
@@ -413,7 +395,6 @@ gulp.task('build:locales', function(callback) {
       .pipe(build(callback));
   }, callback);
 });
-
 gulp.task('watch:locales', function() {
   gulp.watch('locales/*.json', function() {
     runSequence('build:locales', 'build:manifest', 'build:html');
@@ -429,6 +410,9 @@ gulp.task('build:html', function() {
     .pipe(gulp.dest(BUILD_DIR))
     .pipe(logBuild());
 });
+gulp.task('watch:html', function() {
+  gulp.watch('index.html', ['build:html']);
+});
 
 gulp.task('build:manifest', function() {
   var stream = revver.manifest();
@@ -438,10 +422,6 @@ gulp.task('build:manifest', function() {
   return stream
     .pipe(gulp.dest(BUILD_DIR))
     .pipe(logBuild());
-});
-
-gulp.task('watch:html', function() {
-  gulp.watch('index.html', ['build:html']);
 });
 
 gulp.task('watch:serve', serve({ watch: true }));

@@ -78,8 +78,7 @@
     "through2": "^2.0.0",
     "tsu": "0.0.5",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.4.0"
+    "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {
     "start": "gulp",
