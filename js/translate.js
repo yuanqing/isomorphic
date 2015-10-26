@@ -1,1 +1,3 @@
-module.exports = require('lib/translate')('locales/');
+module.exports = require('lib/translate')({
+  moduleNamePrefix: 'locales/'
+});
