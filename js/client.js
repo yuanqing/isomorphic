@@ -18,6 +18,7 @@ linkClickInterceptor(function(url, opts) {
 
 // Connect to Firebase and listen to changes.
 firebase.listen(function(data) {
-  console.log('Synced from Firebase:', data);
+  console.log('Synced from Firebase', data);
   store.dispatch(storeActionCreator.receiveProducts(data.products));
 });
+

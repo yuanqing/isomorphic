@@ -27,7 +27,6 @@ var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 var BUILD_DIR = './build';
 
 var tmpl = lodashTemplate(fs.readFileSync(BUILD_DIR + '/index.html', 'utf8'));
-var supportedLanguages = ['en'];
 
 var app = express();
 app.disable('x-powered-by');
@@ -61,13 +60,16 @@ app.use(expressSession({
 app.get('*', function(request, response) {
   // Initialise a new Store for every new request.
   var store = new Store(reducers);
+
   // Determine the requested language.
-  var negotiator = new Negotiator(request);
-  var language = negotiator.language(supportedLanguages);
-  var locale = language + '-sg';
-  locale = 'en-sg'; // FIXME: Hard-code the locale for now.
+  // var negotiator = new Negotiator(request);
+  // var language = negotiator.language(supportedLanguages);
+
   // Set the `locale` before we populate the `store`.
-  store.dispatch(LocaleActionCreator.setLocale(locale));
+  store.dispatch(LocaleActionCreator.setLocale({
+    language: 'en',
+    country: 'sg'
+  }));
   // Pass in the `store` to the `route` method.
   store.dispatch(RouteActionCreator.route(request.url, { store: store })).then(function() {
     var state = store.getState();
