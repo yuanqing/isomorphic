@@ -177,9 +177,10 @@ gulp.task('coverage:client', openCoverage('test:client', 'coverage/client'));
 //
 
 var JS_VENDOR_MODULES = [
-  'firebase',
   'react',
-  'react-dom'
+  'react-dom',
+  'firebase',
+  'fastclick'
 ];
 
 var logBuild = function() {
