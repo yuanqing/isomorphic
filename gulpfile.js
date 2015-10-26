@@ -278,7 +278,7 @@ var browserifyApp = function(options, callback) {
 
 var serve = function(options) {
   options = options || {};
-  var serverScript = 'js/server.js';
+  var serverScript = 'server.js';
   options.script = serverScript;
   if (options.watch) {
     options.watch = [serverScript, BUILD_DIR + '/index.html'];

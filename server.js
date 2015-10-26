@@ -1,7 +1,6 @@
 require('babel/register');
 
 var fs = require('fs');
-var path = require('path');
 var omit = require('lodash.omit');
 var savoy = require('savoy');
 var React = global.React = require('react');
@@ -15,17 +14,17 @@ var expressSession = require('express-session');
 var lodashTemplate = require('lodash.template');
 var ReactDOMServer = require('react-dom/server');
 
+var config = require('./config');
+
 var Store = require('lib/store');
 
-var config = require('../config');
-var reducers = require('./reducers');
-var compileMeta = require('./update-head').compileMeta;
-var RootComponent = require('./root-component');
-var RouteActionCreator = require('./action-creators/route-action-creator');
+var reducers = require('js/reducers');
+var updateHead = require('js/update-head');
+var RootComponent = require('js/root-component');
+var RouteActionCreator = require('js/action-creators/route-action-creator');
 var LocaleActionCreator = require('lib/action-creators/locale-action-creator');
 
-var ROOT_DIR = path.resolve(__dirname, '..');
-var BUILD_DIR = ROOT_DIR + '/build';
+var BUILD_DIR = './build';
 
 var tmpl = lodashTemplate(fs.readFileSync(BUILD_DIR + '/index.html', 'utf8'));
 var supportedLanguages = ['en'];
@@ -33,7 +32,7 @@ var supportedLanguages = ['en'];
 var app = express();
 app.disable('x-powered-by');
 app.use(compression());
-app.use(serveFavicon(ROOT_DIR + '/assets/favicon.ico'));
+app.use(serveFavicon('./assets/favicon.ico'));
 savoy.each(['css', 'images', 'js', 'locales'], function(dir) {
   app.use('/' + dir, express.static(BUILD_DIR + '/' + dir));
 });
@@ -82,7 +81,7 @@ app.get('*', function(request, response) {
         return response.redirect(redirectUrl);
       }
     }
-    var meta = compileMeta(state.route.meta);
+    var meta = updateHead.compileMeta(state.route.meta);
     omit(state.route, 'meta');
     var reactElement = React.createElement(RootComponent, {
       store: store
